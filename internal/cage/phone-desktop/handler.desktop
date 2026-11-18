@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Antigravity
+Exec=/usr/local/lib/cage-phone-desktop/xdg-open %u
+Terminal=false
+MimeType=x-scheme-handler/antigravity;
