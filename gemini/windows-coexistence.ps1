@@ -11,6 +11,8 @@ function Start-Checked([string]$File, [string[]]$Arguments, [int]$Expected = 0) 
     $p = Start-Process $File -ArgumentList $Arguments -PassThru
     if (-not $p.WaitForExit(300000) -or $p.ExitCode -ne $Expected) { throw "测试程序退出异常（$($p.ExitCode)）" }
 }
+$newProfile = Join-Path $env:USERPROFILE '.gemini-cage'
+if ((Test-Path $newProfile) -or $env:GEMINI_CAGE_CONFIG) { throw '测试要求空的默认 Gemini Cage 配置' }
 Start-Checked $UpstreamInstaller @('/S', "/D=$original")
 function Original-State {
     $reg = Get-ItemProperty -LiteralPath $key
@@ -21,7 +23,17 @@ function Original-State {
     return $result -join '|'
 }
 $before = Original-State
+$native = Join-Path $PSScriptRoot '../_output/windows-amd64/app'
+$info = & "$native/resources/cage.exe" agent capabilities | ConvertFrom-Json
+if ($LASTEXITCODE -or $info.config_path -ne (Join-Path $newProfile 'config.json')) { throw '命令行默认配置与 Gemini Cage 不一致' }
+$defaultReport = Join-Path $env:RUNNER_TEMP 'gemini-default-window.json'
+Start-Checked "$native/Cage.exe" @('--smoke-test', "`"$defaultReport`"")
+if (-not (Test-Path "$newProfile/webview2") -or (Test-Path "$env:USERPROFILE/.claude-cage")) { throw '桌面工作台未隔离默认配置' }
 Start-Checked $Installer @('/S', "/D=$original") 2
+Start-Checked $Installer @('/S', "/D=$original\empty-child") 2
+$alias = Join-Path $env:RUNNER_TEMP 'original-junction'
+New-Item -ItemType Junction -Path $alias -Target $original | Out-Null
+Start-Checked $Installer @('/S', "/D=$alias\new-folder") 2
 & (Join-Path $PSScriptRoot '../scripts/test-windows-install.ps1') -Installer $Installer
 if ((Original-State) -cne $before) { throw '原应用、注册表或快捷方式发生变化' }
 # Open the upstream workbench after our installer is gone. Keep its own smoke

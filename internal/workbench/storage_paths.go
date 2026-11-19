@@ -54,6 +54,13 @@ func privateProjectDirectories(profile string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	other, err := cage.OtherWindowsInstallDir()
+	if err != nil {
+		return nil, err
+	}
+	if other != "" {
+		directories = append(directories, other)
+	}
 	directories = append(directories, profile)
 	directories = append(directories, guestos.WindowsPrivateStoragePaths()...)
 	for _, directory := range directories {

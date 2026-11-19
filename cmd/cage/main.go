@@ -92,6 +92,16 @@ func run() int {
 	cli.Command = "gemini-cage"
 	cli.UpdateHint = "从 GeminiCage 项目的发行页面下载新版安装包。"
 	args := os.Args[1:]
+	if len(args) == 2 && args[0] == "verify-install-directory" && runtime.GOOS == "windows" {
+		home, err := os.UserHomeDir()
+		if err == nil {
+			err = cage.CheckInstallDirectory(args[1], home)
+		}
+		if err != nil {
+			return fail(err)
+		}
+		return 0
+	}
 	if len(args) > 0 && args[0] == "host-download" {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()

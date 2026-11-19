@@ -321,6 +321,17 @@ Function .onInit
 FunctionEnd
 
 Function CheckDestination
+  InitPluginsDir
+  SetOutPath "$PLUGINSDIR"
+  File /oname=check-install.exe "${APP_DIR}/resources/cage.exe"
+  nsExec::ExecToStack '"$PLUGINSDIR\check-install.exe" verify-install-directory "$INSTDIR"'
+  Pop $0
+  Pop $1
+  ${If} $0 != 0
+    DetailPrint "$1"
+    SetErrorLevel 2
+    Abort "无法确认安装目录独立于已有应用和配置，请选择其他目录。"
+  ${EndIf}
   ${GetRoot} "$INSTDIR" $0
   ${If} $0 == ""
   ${OrIf} $INSTDIR == $0

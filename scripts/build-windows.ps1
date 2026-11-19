@@ -223,7 +223,7 @@ try {
         }
         $runtimeManifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $qemuTarget 'cage-build.json') -Encoding utf8
     } else {
-        [IO.File]::WriteAllText((Join-Path $app 'DEVELOPMENT-BUILD.txt'), "Unsigned development build. Automatic update installation is disabled. Windows 10/11 runtime acceptance is still required.`n")
+        [IO.File]::WriteAllText((Join-Path $app 'DEVELOPMENT-BUILD.txt'), "Gemini Cage Windows 测试版未使用发布者证书签名。请在 GitHub 发行页下载并手动更新。`n")
     }
     Assert-WindowsQemuRuntime $qemuTarget -Firmware
     Assert-WindowsWorkbench $app

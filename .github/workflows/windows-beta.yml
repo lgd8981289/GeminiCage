@@ -44,6 +44,8 @@ jobs:
         run: |
           ./scripts/build-windows.ps1 -UpstreamInstaller "$env:RUNNER_TEMP/kit.exe"
           ./scripts/package-windows.ps1 -SkipBuild -QemuSourceArchive "$env:RUNNER_TEMP/qemu-source.tar.gz"
+      - name: 检查运行器能否启动 WHPX 虚拟 CPU
+        run: ./gemini/windows-hypervisor-check.ps1 -AppDirectory _output/windows-amd64/app
       - name: 在含 Claude Cage 的 Windows 上验证共存
         run: |
           $exe = Get-ChildItem _output/releases/*/windows/GeminiCage-*.exe

@@ -19,7 +19,8 @@ func windowsHostStorage(ctx context.Context, id uuid.UUID, input windowsHostStor
 }
 
 func WindowsPrivateStoragePaths() []string {
-	return []string{filepath.Join(managerKnownFolder(windows.FOLDERID_ProgramData), "GeminiCage", "HyperVManager")}
+	base := managerKnownFolder(windows.FOLDERID_ProgramData)
+	return []string{filepath.Join(base, "GeminiCage", "HyperVManager"), filepath.Join(base, "Cage", "HyperVManager")}
 }
 
 func replaceWindowsStorageProfile(path string, data []byte) error {

@@ -1,8 +1,12 @@
 # GeminiCage
 
-在 Mac 上开一台独立的虚拟机，里面运行 **Google Antigravity、Gemini 网页版和 Antigravity CLI**。你可以在同一个工作台中选网络出口、打开项目、编辑代码、使用终端，并在虚拟机自己的浏览器里登录 Google。
+在 Mac 或 Windows x64 电脑上开一台独立的虚拟机，里面运行 **Google Antigravity、Gemini 网页版和 Antigravity CLI**。你可以在同一个工作台中选网络出口、打开项目、编辑代码、使用终端，并在虚拟机自己的浏览器里登录 Google。
 
 **[下载 GeminiCage 2.0.4 · Mac 版（Apple 芯片）](https://github.com/lgd8981289/GeminiCage/releases/download/v2.0.4/GeminiCage-2.0.4-macos-arm64.dmg)**　·　[发行说明与 SHA-256 校验文件](https://github.com/lgd8981289/GeminiCage/releases/tag/v2.0.4)
+
+**[Windows x64 测试版下载与校验](https://github.com/lgd8981289/GeminiCage/releases/tag/v2.0.5-beta.1)**　·　[Windows 中文安装指南](docs/windows.md)
+
+以下流程以 Mac 稳定版为例。
 
 | 开始前 | 你需要准备的东西 |
 | --- | --- |
