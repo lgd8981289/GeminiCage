@@ -118,7 +118,7 @@ func TestStatelessCommandsNeedNoProfile(t *testing.T) {
 		{name: "version gate met", args: []string{"version", "--min", "0.0.0"}},
 		{name: "version gate missed", args: []string{"version", "--min", "99.0.0"}, wantCode: 1, wantStderr: "Update it:  update Cage"},
 		{name: "licenses", args: []string{"licenses"}, wantStdout: "MIT License"},
-		{name: "licenses usage", args: []string{"licenses", "x"}, wantCode: 2, wantStderr: "Usage: claude-cage licenses"},
+		{name: "licenses usage", args: []string{"licenses", "x"}, wantCode: 2, wantStderr: "Usage: gemini-cage licenses"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

@@ -2,7 +2,7 @@
 
 在 Mac 上开一台独立的虚拟机，里面运行 **Google Antigravity、Gemini 网页版和 Antigravity CLI**。你可以在同一个工作台中选网络出口、打开项目、编辑代码、使用终端，并在虚拟机自己的浏览器里登录 Google。
 
-**[下载 GeminiCage 2.0.1 · Mac 版（Apple 芯片）](https://github.com/lgd8981289/GeminiCage/releases/download/v2.0.1/GeminiCage-2.0.1-macos-arm64.dmg)**　·　[发行说明与 SHA-256 校验文件](https://github.com/lgd8981289/GeminiCage/releases/tag/v2.0.1)
+**[下载 GeminiCage 2.0.2 · Mac 版（Apple 芯片）](https://github.com/lgd8981289/GeminiCage/releases/download/v2.0.2/GeminiCage-2.0.2-macos-arm64.dmg)**　·　[发行说明与 SHA-256 校验文件](https://github.com/lgd8981289/GeminiCage/releases/tag/v2.0.2)
 
 | 开始前 | 你需要准备的东西 |
 | --- | --- |
@@ -20,7 +20,7 @@
 
 ```sh
 cd ~/Downloads
-shasum -a 256 GeminiCage-2.0.1-macos-arm64.dmg
+shasum -a 256 GeminiCage-2.0.2-macos-arm64.dmg
 ```
 
 **用微信扫一扫，关注公众号「程序员Sunday」**。我在公众号分享 AI 工具和编程实操。第一次安装客机需要一点时间，可以先把公众号和这份指南收藏起来，之后配置代理和项目时方便再找。手机上也可以打开微信「搜一搜」，输入 **程序员Sunday**。
@@ -61,8 +61,12 @@ shasum -a 256 GeminiCage-2.0.1-macos-arm64.dmg
 
 ## 常见问题
 
+**2.0.1 在「安装与检查」提示退出码 1，操作详情里有 `project path contains whitespace`，怎么办？**
+
+安装上方的 2.0.2，退出旧版并重新打开 Gemini Cage，点「继续安装」。新版会沿用已准备的基础镜像和已有虚拟机标识，并使用不含空格的默认传输目录。旧传输目录 `~/Documents/Gemini Cage/Downloads` 中已有的文件仍可在 Finder 中找到。
+
 **已经安装 Claude Cage，会共用账号和磁盘吗？**  
-Gemini Cage 的本机配置位于 `~/Library/GeminiCage`，使用独立的账户、钥匙串标识和虚拟机。默认文件传输目录为 `~/Documents/Gemini Cage/Downloads`。旧版 Gemini QEMU 启动器的用户，可从「文件 → 打开旧版 Antigravity 环境…」回到原来的客机。
+Gemini Cage 的本机配置位于 `~/Library/GeminiCage`，使用独立的账户、钥匙串标识和虚拟机。默认文件传输目录为 `~/Documents/GeminiCage/Downloads`。旧版 Gemini QEMU 启动器的用户，可从「文件 → 打开旧版 Antigravity 环境…」回到原来的客机。
 
 **桌面安装成功，但应用没打开怎么办？**  
 先确认工作台显示客机已运行，再在 Antigravity 页点「打开 Antigravity」。Linux 版的「修复安装」会重新下载并验证本版支持的 Google 发行包。Google 授权页打不开时，先在客机浏览器测试登录页是否可达，再查看网络检查结果。
@@ -78,7 +82,7 @@ Gemini Cage 的本机配置位于 `~/Library/GeminiCage`，使用独立的账户
 开发环境需要 Apple 芯片 Mac、Xcode Command Line Tools（含 Swift 编译器）、Git、Go 1.26.10 或更高、Node.js 22.20 或更高和 npm。构建脚本从上游 **Cage 0.1.8 macOS arm64** 软件包只读提取基础组件；可直接挂载上游磁盘映像。下面的命令适用于本次发布的版本。[上游 0.1.8 发行页](https://github.com/Lee-xeo/Claude-Cage/releases/tag/v0.1.8)
 
 ```sh
-git clone --branch v2.0.1 https://github.com/lgd8981289/GeminiCage.git
+git clone --branch v2.0.2 https://github.com/lgd8981289/GeminiCage.git
 cd GeminiCage
 
 # 单独运行这个子 shell。退出时会卸载构建用的上游映像。

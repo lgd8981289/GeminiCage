@@ -5,15 +5,20 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/sylvinus/agent-vm/internal/mounts"
 )
 
 func TestGeminiDownloadsOutsideLibrary(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	profile := filepath.Join(home, "Library", "GeminiCage")
-	downloads := filepath.Join(home, "Documents", "Gemini Cage", "Downloads")
+	downloads := filepath.Join(home, "Documents", "GeminiCage", "Downloads")
 	for _, suffix := range []string{"", filepath.Join("profiles", "second")} {
 		dir := DefaultEnvironmentDir(filepath.Join(profile, suffix))
+		if why, bad := mounts.Unmountable(dir); bad {
+			t.Fatalf("default transfer directory %q is unmountable: %s", dir, why)
+		}
 		if want := filepath.Join(downloads, suffix); dir != want {
 			t.Errorf("download directory = %q, want %q", dir, want)
 		}

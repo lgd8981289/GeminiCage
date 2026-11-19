@@ -38,7 +38,7 @@ func DefaultEnvironmentDir(profile string) string {
 	path := filepath.Clean(profile) + "-downloads"
 	if home, err := os.UserHomeDir(); err == nil {
 		defaultProfile := filepath.Join(home, "Library", "GeminiCage")
-		transferRoot := filepath.Join(home, "Documents", "Gemini Cage", "Downloads")
+		transferRoot := filepath.Join(home, "Documents", "GeminiCage", "Downloads")
 		if paths.Equal(profile, defaultProfile) {
 			path = transferRoot
 		} else if StorageContains(defaultProfile, profile) {
