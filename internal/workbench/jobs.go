@@ -23,6 +23,7 @@ type Job struct {
 	Error         string         `json:"error,omitempty"`
 	Recovery      string         `json:"recovery,omitempty"`
 	Workspace     string         `json:"workspace,omitempty"`
+	LogSummary    string         `json:"log_summary,omitempty"`
 	Log           string         `json:"log,omitempty"`
 }
 
@@ -87,8 +88,21 @@ func (m *jobManager) submit(operation sync.Locker, kind string, pauseVersion uin
 		}
 	}, func(line string) bool {
 		if m.state.ID == execution.id {
+			p := parseSetupProgress(line)
+			if p != nil {
+				m.state.appendLogSummary(p.Label)
+			} else {
+				switch {
+				case strings.HasPrefix(line, "Cage services ready."):
+					m.state.appendLogSummary("客机桌面服务已就绪")
+				case strings.HasPrefix(line, "Unpacking "), strings.HasPrefix(line, "Preparing to unpack "):
+					m.state.appendLogSummary("正在解包客机软件")
+				case strings.HasPrefix(line, "Setting up "):
+					m.state.appendLogSummary("正在配置客机软件")
+				}
+			}
 			if m.state.SetupProgress != nil {
-				if p := parseSetupProgress(line); p != nil {
+				if p != nil {
 					previous := m.state.SetupProgress
 					if p.System == "" {
 						p.System = previous.System
@@ -189,6 +203,22 @@ func (m *jobManager) finishLocked(execution *jobExecution, err error) {
 	default:
 		m.state.Message = "已完成"
 		diagnostics.Log("info", "task", m.state.Kind+" completed")
+	}
+}
+
+// Keep a bounded history of trusted labels. The raw stream can contain private
+// paths and third-party output, so it is never copied into this summary.
+func (j *Job) appendLogSummary(label string) {
+	if j.LogSummary == label || strings.HasSuffix(j.LogSummary, "\n"+label) {
+		return
+	}
+	if j.LogSummary == "" {
+		j.LogSummary = label
+		return
+	}
+	j.LogSummary += "\n" + label
+	if strings.Count(j.LogSummary, "\n") >= 12 {
+		_, j.LogSummary, _ = strings.Cut(j.LogSummary, "\n")
 	}
 }
 

@@ -47,7 +47,7 @@ export function DesktopToolbar({ desktop, platform, title = "Antigravity", check
     return (
       <div className="desktop-toolbar-reveal">
         {sidebarCollapsed && <button className="icon-button" aria-label="展开侧栏" title="展开侧栏" onClick={onExpand}><PanelLeftOpen size={15} /></button>}
-        <button className="icon-button" aria-label="显示 Desktop 工具栏" title="显示 Desktop 工具栏" onClick={() => toggleToolbar(false)}><ChevronDown size={15} /></button>
+        <button className="icon-button" aria-label="显示桌面工具栏" title="显示桌面工具栏" onClick={() => toggleToolbar(false)}><ChevronDown size={15} /></button>
       </div>
     );
   }
@@ -73,7 +73,7 @@ export function DesktopToolbar({ desktop, platform, title = "Antigravity", check
         {desktop?.running && (
           <label className="desktop-display-size">
             显示大小
-            <InlineSelect aria-label="Desktop 显示大小" value={zoom} onValueChange={(next) => {
+            <InlineSelect aria-label="桌面画面大小" value={zoom} onValueChange={(next) => {
               const value = next === "auto" ? "auto" : Number(next);
               setZoom(value);
               try { localStorage.setItem(automatic ? "cage-windows-desktop-zoom" : "cage-desktop-zoom", String(value)); } catch { /* Session-only preference. */ }
@@ -110,7 +110,7 @@ export function DesktopToolbar({ desktop, platform, title = "Antigravity", check
         >
           <RefreshCw size={15} />
         </button>
-        {desktop?.running && <button className="icon-button" aria-label="隐藏 Desktop 工具栏" title="隐藏 Desktop 工具栏" onClick={() => toggleToolbar(true)}><ChevronUp size={15} /></button>}
+        {desktop?.running && <button className="icon-button" aria-label="隐藏桌面工具栏" title="隐藏桌面工具栏" onClick={() => toggleToolbar(true)}><ChevronUp size={15} /></button>}
       </header>
   );
 }

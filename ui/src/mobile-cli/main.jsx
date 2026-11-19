@@ -11,6 +11,7 @@ import { SessionActionDialog, sortSessions } from "./session-row";
 import { ArchivedSessions } from "../cli-sessions";
 import { SessionAccount } from "../session-account";
 import "./mobile.css";
+import { FormValidation } from "../form-validation.jsx";
 import { IconHints } from "../icon-hints.jsx";
 import { MessageBody, ToolActivity, TranscriptContext } from "./transcript";
 
@@ -580,4 +581,4 @@ function Approval({ approval, busy, feedback, onDecide }) {
   </section>;
 }
 
-createRoot(document.getElementById("root")).render(<><IconHints /><App /></>);
+createRoot(document.getElementById("root")).render(<><FormValidation /><IconHints /><App /></>);

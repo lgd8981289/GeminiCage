@@ -1,3 +1,4 @@
+import { OperationLog } from "./operation-log";
 import { shortcut, primaryModifier } from "./platform.mjs";
 import logo from "./logo.png";
 import React, { useEffect, useRef, useState } from "react";
@@ -2054,7 +2055,7 @@ function App() {
             {status.job.error && (
               <div className="error-message"><SafetyMessage message={status.job.error} /></div>
             )}
-            <pre className="job-log">{status.job.log || "暂无日志"}</pre>
+            <OperationLog job={status.job} />
           </div>
         </Modal>
       )}

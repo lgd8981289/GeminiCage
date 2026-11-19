@@ -78,7 +78,7 @@ func (s *Server) desktopLocalControl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if s.clientOnly || !equalSecret(request.Token, s.token) {
-		http.Error(w, "Launcher refused", http.StatusUnauthorized)
+		http.Error(w, "启动器验证失败，请重新打开桌面应用。", http.StatusUnauthorized)
 		return
 	}
 	switch r.PathValue("action") {

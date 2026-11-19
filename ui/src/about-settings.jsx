@@ -36,7 +36,7 @@ function CheckResult({ label, item, source, onError }) {
       <p className={item.error ? "error-message" : "about-result-status"}>
         {item.error || (source ? sourceMessages : releaseMessages)[item.status]}
       </p>
-      {item.retryAt && <p className="footnote">可于 {new Date(item.retryAt).toLocaleString()} 后重试</p>}
+      {item.retryAt && <p className="footnote">可于 {new Date(item.retryAt).toLocaleString("zh-CN")} 后重试</p>}
       {source && item.commit && <p className="about-result-detail">主分支提交 <code title={item.commit}>{item.commit.slice(0, 12)}</code></p>}
       {source && item.status === "available" && item.aheadBy > 0 && <p className="footnote">主分支新增 {item.aheadBy} 个提交</p>}
       {!source && item.version && <p className="about-result-detail">{item.version} · {item.prerelease ? "预发行版" : "正式版"}</p>}
@@ -93,7 +93,7 @@ export function AboutSettings() {
         {busy ? <LoaderCircle size={15} className="spin" /> : <RefreshCw size={15} />}
         {busy ? "正在检查…" : coolingDown ? "等待重试" : "检测更新"}
       </button>
-      {result?.checkedAt && <span className="footnote">检查时间：{new Date(result.checkedAt).toLocaleString()}</span>}
+      {result?.checkedAt && <span className="footnote">检查时间：{new Date(result.checkedAt).toLocaleString("zh-CN")}</span>}
     </div>
     <p className="footnote">优先通过主机网络与系统代理检查主分支提交和最新发行版，包含预发行版；主机连接失败时尝试 Cage 所选代理。检查后可前往发布页下载。</p>
     {busy && <p role="status">正在核对源码提交与发行版…</p>}

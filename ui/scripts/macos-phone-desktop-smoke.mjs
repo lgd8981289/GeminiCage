@@ -49,7 +49,7 @@ try {
   });
   await page.goto((process.env.CAGE_UI_URL || "http://127.0.0.1:5298") + "/mobile.html");
   await page.getByRole("dialog", { name: "工作区侧栏" }).getByRole("button", { name: "Claude Desktop", exact: true }).click();
-  const screen = page.getByRole("img", { name: "远程 Desktop 画面", exact: true });
+  const screen = page.getByRole("img", { name: "远程桌面画面", exact: true });
   await screen.waitFor();
   await page.getByText(/请在电脑的 Cage 中完成 Claude Desktop 登录/).waitFor();
   assert.equal(await page.getByRole("button", { name: "登录窗口", exact: true }).count(), 0);

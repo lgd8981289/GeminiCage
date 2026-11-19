@@ -309,7 +309,7 @@ function ThemeCard({ variant, value, active, onChange, codeFonts }) {
             aria-label={label + "终端预览"}
           >
             <span style={{ color: terminal.green }}>~/cage</span> ${" "}
-            <span style={{ color: terminal.blue }}>echo</span> hello
+            <span style={{ color: terminal.blue }}>echo</span> 你好
             <i style={{ background: terminal.cursor }} />
           </div>
           <button

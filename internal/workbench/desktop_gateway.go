@@ -495,7 +495,7 @@ func (d *desktopGateway) handle(path string, w http.ResponseWriter, r *http.Requ
 		return false
 	}
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "此接口不支持当前请求方式。", http.StatusMethodNotAllowed)
 		return true
 	}
 	var in switchRequest

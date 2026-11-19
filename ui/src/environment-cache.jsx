@@ -93,7 +93,7 @@ export function EnvironmentCache({ status, onConfirm }) {
         <p className="field-help">副本仍占用磁盘空间，不会自动删除。恢复不覆盖新生成的数据。</p>
         {!inventory.batches.length && <p className="field-help">暂无可恢复批次。</p>}
         {inventory.batches.map(batch => <div className="setting-summary-row" key={batch.id}>
-          <span>{new Date(batch.created_at * 1000).toLocaleString()} · {batch.count} 项缓存</span>
+          <span>{new Date(batch.created_at * 1000).toLocaleString("zh-CN")} · {batch.count} 项缓存</span>
           <button disabled={disabled} onClick={() => mutate("restore", batch.id)}>恢复此批缓存</button>
         </div>)}
       </div>

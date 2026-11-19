@@ -116,8 +116,8 @@ static NSString *mountID(NSString *project) {
     panel.canChooseFiles = NO;
     panel.allowsMultipleSelection = NO;
     panel.directoryURL = [NSURL fileURLWithPath:project isDirectory:YES];
-    panel.message = @"Allow Cage to open this mounted project in the guest terminal and editor.";
-    panel.prompt = @"Use Project";
+    panel.message = @"允许 Gemini Cage 在客机终端和编辑器中打开所选项目文件夹。";
+    panel.prompt = @"使用此项目";
     _nonce = NSUUID.UUID.UUIDString;
     _panel = panel;
     __block NSTimer *timer;

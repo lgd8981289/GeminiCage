@@ -51,7 +51,7 @@ func (s *Server) launcherAuthenticated(w http.ResponseWriter, r *http.Request) b
 		return false
 	}
 	if !equalSecret(input.Token, s.token) {
-		http.Error(w, "Launcher refused", http.StatusUnauthorized)
+		http.Error(w, "启动器验证失败，请重新打开桌面应用。", http.StatusUnauthorized)
 		return false
 	}
 	return true

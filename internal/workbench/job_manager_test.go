@@ -320,3 +320,20 @@ func TestJobManagerPreservesProjectRecovery(t *testing.T) {
 		t.Fatalf("stale recovery after retry: %+v", job)
 	}
 }
+
+func TestJobPublishesChineseProgressAndPreservesRawOutput(t *testing.T) {
+	var m jobManager
+	var lock sync.Mutex
+	defer m.close()
+	_, err := m.submit(&lock, "setup", 0, nil, nil, func() error {
+		_, err := fmt.Fprintln(m.execution(), "Installing base packages...\nUnpacking unknown.deb\nUnpacking another.deb\nunknown output\nCage services ready. Timezone=UTC")
+		return err
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := awaitJobIdle(t, &m)
+	if state.LogSummary != "正在安装 Linux 基础软件包\n正在解包客机软件\n客机桌面服务已就绪" || !strings.Contains(state.Log, "unknown output") {
+		t.Fatalf("unexpected operation history: %#v", state)
+	}
+}

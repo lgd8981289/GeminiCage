@@ -99,7 +99,7 @@ func (s *Server) browserEvents(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, errBrowserNotReady) {
 			status = http.StatusConflict
 		}
-		http.Error(w, "Browser unavailable", status)
+		http.Error(w, "客机浏览器尚未连接，请确认环境已启动后重试。", status)
 		return
 	}
 	defer body.Close()

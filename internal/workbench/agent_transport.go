@@ -27,10 +27,10 @@ func agentConnectTarget(ctx context.Context, configPath string, target AgentTarg
 		return agentConnect(ctx, configPath)
 	}
 	if target.Scope != "desktop" && target.Scope != "selected" && target.Scope != "client" {
-		return nil, &AgentError{Code: "invalid_input", Message: "scope must be local, desktop, selected or client.", NextAction: "capabilities"}
+		return nil, &AgentError{Code: "invalid_input", Message: "scope 可选 local、desktop、selected 或 client。", NextAction: "capabilities"}
 	}
 	if target.Scope == "selected" && target.Connection == "" {
-		return nil, &AgentError{Code: "invalid_input", Message: "selected scope requires --connection from client.context.", NextAction: "client.context"}
+		return nil, &AgentError{Code: "invalid_input", Message: "selected 作用域需要通过 --connection 指定 client.context 返回的连接标识。", NextAction: "client.context"}
 	}
 	path := desktopConfigPath(configPath)
 	if target.Scope == "client" {
@@ -38,12 +38,12 @@ func agentConnectTarget(ctx context.Context, configPath string, target AgentTarg
 	}
 	c, err := connectController(filepath.Dir(path))
 	if err != nil {
-		return nil, &AgentError{Code: "service_unavailable", Message: "Open the Cage desktop before managing client configuration.", NextAction: "open_desktop"}
+		return nil, &AgentError{Code: "service_unavailable", Message: "请先打开 Gemini Cage 桌面应用，再管理客户端配置。", NextAction: "open_desktop"}
 	}
 	want, err := currentController()
 	if err != nil || !want.matches(c.launch.Controller) || (target.Scope != "client" && !c.launch.DesktopGateway) || (target.Scope == "client" && !c.launch.ClientOnly) || filepath.Clean(c.launch.ConfigPath) != filepath.Clean(path) {
 		c.close()
-		return nil, &AgentError{Code: "controller_mismatch", Message: "The desktop controller does not match this CLI and configuration.", NextAction: "open_desktop"}
+		return nil, &AgentError{Code: "controller_mismatch", Message: "桌面后台与当前命令行工具或配置不匹配，请使用同一版本。", NextAction: "open_desktop"}
 	}
 	u, _ := url.Parse(c.launch.URL)
 	code, err := c.callContext(ctx, "POST", "/api/session", map[string]string{"token": u.Fragment}, nil)
@@ -71,34 +71,34 @@ func AgentRequest(ctx context.Context, configPath string, target AgentTarget, me
 	var result AgentResponse
 	u, err := url.Parse(path)
 	if err != nil || u.IsAbs() || u.Host != "" || !strings.HasPrefix(u.Path, "/api/") || u.Fragment != "" || strings.ContainsAny(path, "\r\n\\") || strings.Contains(u.Path, "//") || strings.Contains(u.Path, "/../") {
-		return result, &AgentError{Code: "invalid_input", Message: "Use a relative /api/ path without a host, fragment or traversal.", NextAction: "capabilities"}
+		return result, &AgentError{Code: "invalid_input", Message: "请使用以 /api/ 开头的相对路径，不要包含主机名、片段或上级目录。", NextAction: "capabilities"}
 	}
 	switch method {
 	case "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD":
 	default:
-		return result, &AgentError{Code: "invalid_input", Message: "Unsupported HTTP method.", NextAction: "capabilities"}
+		return result, &AgentError{Code: "invalid_input", Message: "更新客机组件，过程中可能重启客机服务", NextAction: "capabilities"}
 	}
 	// These endpoints are internal transports, not user actions. Device
 	// enrollment/unlock must run inside the same native credential store and
 	// biometric policy as the desktop; never return its wrapping secret.
 	if u.Path == "/api/agent/native/window" || u.Path == "/api/account/device-enroll" || u.Path == "/api/account/device-unlock" || u.Path == "/api/account/device-revoke" || u.Path == "/api/session" || u.Path == "/api/launch" || u.Path == "/api/handoff" || u.Path == "/api/desktop-owner" || strings.HasPrefix(u.Path, "/api/desktop-local/") {
-		return result, &AgentError{Code: "native_transport_required", Message: "Use native.submit with the same accountDevice or desktop action. Transport credentials are not exported.", NextAction: "native.submit"}
+		return result, &AgentError{Code: "native_transport_required", Message: "通过 native.submit 提交 accountDevice 或桌面操作，连接凭据不对外提供。", NextAction: "native.submit"}
 	}
 	// Client-only operations must address the desktop explicitly. Ordinary
 	// business routes on that listener require the selected target's generation.
 	clientPath := strings.HasPrefix(u.Path, "/api/client/") || strings.HasPrefix(u.Path, "/api/agent/native") || u.Path == "/api/agent/routes"
 	if target.Scope == "client" && !clientPath && target.Connection == "" {
-		return result, &AgentError{Code: "invalid_input", Message: "Client workload requests require the explicit selected --connection", NextAction: "client.context"}
+		return result, &AgentError{Code: "invalid_input", Message: "使用客户端访问工作环境时，请指定所选环境的 --connection。", NextAction: "client.context"}
 	}
 	if target.Scope == "desktop" && !clientPath {
-		return result, &AgentError{Code: "invalid_input", Message: "Use selected scope with --connection for workload requests through the desktop.", NextAction: "client.context"}
+		return result, &AgentError{Code: "invalid_input", Message: "通过桌面访问工作环境时，请使用 selected 作用域并指定 --connection。", NextAction: "client.context"}
 	}
 	if output != "" {
 		if !filepath.IsAbs(output) {
-			return result, &AgentError{Code: "invalid_input", Message: "output must be an absolute new file path", NextAction: "capabilities"}
+			return result, &AgentError{Code: "invalid_input", Message: "请指定一个尚不存在的文件的绝对路径。", NextAction: "capabilities"}
 		}
 		if _, err := os.Lstat(output); !os.IsNotExist(err) {
-			return result, &AgentError{Code: "invalid_input", Message: "Existing output files are preserved", NextAction: "capabilities"}
+			return result, &AgentError{Code: "invalid_input", Message: "输出文件已存在，请选择新路径。", NextAction: "capabilities"}
 		}
 	}
 	c, err := agentConnectTarget(ctx, configPath, target)
@@ -122,7 +122,7 @@ func AgentRequest(ctx context.Context, configPath string, target AgentTarget, me
 	req.Header.Set(connectionHeader, connection)
 	response, err := c.client.Do(req)
 	if err != nil {
-		return result, &AgentError{Code: "outcome_unknown", Message: "The request was interrupted. Inspect the original target before repeating a mutation.", NextAction: "status"}
+		return result, &AgentError{Code: "outcome_unknown", Message: "请求已中断，请先核对原目标的状态，再决定是否重新提交修改。", NextAction: "status"}
 	}
 	defer response.Body.Close()
 	result.HTTPStatus = response.StatusCode
@@ -136,7 +136,7 @@ func AgentRequest(ctx context.Context, configPath string, target AgentTarget, me
 	}
 	if output != "" {
 		if !filepath.IsAbs(output) {
-			return result, &AgentError{Code: "invalid_input", Message: "output must be an absolute new file path.", NextAction: "capabilities"}
+			return result, &AgentError{Code: "invalid_input", Message: "请指定一个尚不存在的文件的绝对路径。", NextAction: "capabilities"}
 		}
 		f, err := os.CreateTemp(filepath.Dir(output), ".cage-agent-response-*")
 		if err != nil {
@@ -163,10 +163,10 @@ func AgentRequest(ctx context.Context, configPath string, target AgentTarget, me
 	}
 	data, err := io.ReadAll(io.LimitReader(response.Body, (32<<20)+1))
 	if err != nil || len(data) > 32<<20 {
-		return result, &AgentError{Code: "invalid_response", Message: "Response exceeds 32 MiB or was interrupted; use --output for a file response.", NextAction: "status"}
+		return result, &AgentError{Code: "invalid_response", Message: "响应超过 32 MiB 或传输中断；文件响应请使用 --output 保存。", NextAction: "status"}
 	}
 	if !json.Valid(data) {
-		return result, &AgentError{Code: "output_required", Message: "This response is not JSON. Use --output with a new absolute file path for binary or streaming content.", NextAction: "capabilities"}
+		return result, &AgentError{Code: "output_required", Message: "响应不是 JSON。如需保存二进制或流式内容，请通过 --output 指定新文件的绝对路径。", NextAction: "capabilities"}
 	}
 	result.Data = data
 	return result, nil
@@ -185,5 +185,5 @@ func AgentCallTarget(ctx context.Context, configPath string, target AgentTarget,
 			return result.Data, err
 		}
 	}
-	return nil, &AgentError{Code: "unknown_operation", Message: "Unknown operation. Read capabilities or use request for an existing UI endpoint.", NextAction: "capabilities"}
+	return nil, &AgentError{Code: "unknown_operation", Message: "请先解锁 Gemini Cage，再配置环境。", NextAction: "capabilities"}
 }

@@ -144,25 +144,33 @@ export async function native(action, extra = {}) {
     throw new Error(message, { cause: error });
   }
 }
-export const readClipboard = () =>
-  nativeAvailable() ? native("clipboardRead") : navigator.clipboard.readText();
-export const writeClipboard = (text) =>
-  nativeAvailable()
-    ? native("clipboardWrite", { text })
-    : navigator.clipboard.writeText(text);
+export async function readClipboard() {
+  if (nativeAvailable()) return native("clipboardRead");
+  try { return await navigator.clipboard.readText(); }
+  catch (cause) { throw new Error("浏览器无法读取剪贴板，请允许此页面访问剪贴板或手动粘贴。", { cause }); }
+}
+export async function writeClipboard(text) {
+  if (nativeAvailable()) return native("clipboardWrite", { text });
+  try { return await navigator.clipboard.writeText(text); }
+  catch (cause) { throw new Error("浏览器无法写入剪贴板，请允许此页面访问剪贴板或手动复制。", { cause }); }
+}
+function webAddress(value) {
+  try { return new URL(value).href; }
+  catch (cause) { throw new Error("网址格式无效，请检查域名和端口后重试。", { cause }); }
+}
 export function normalizeURL(text) {
   const value = text.trim();
   if (!value || value === "about:blank") return "about:blank";
-  if (/^https?:\/\//i.test(value)) return new URL(value).href;
+  if (/^https?:\/\//i.test(value)) return webAddress(value);
   if (/^[a-z][a-z\d+.-]*:/i.test(value) && !/^localhost:\d+/i.test(value))
     throw new Error("地址仅支持 http 或 https");
   if (
     !/\s/.test(value) &&
     (value.includes(".") || /^localhost(?::\d+)?(?:\/|$)/i.test(value))
   )
-    return new URL(
+    return webAddress(
       (/^localhost|^127\./.test(value) ? "http://" : "https://") + value,
-    ).href;
+    );
   return "https://www.google.com/search?q=" + encodeURIComponent(value);
 }
 

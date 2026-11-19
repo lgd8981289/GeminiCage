@@ -199,7 +199,8 @@ func sendInput(_ input: Request, window: SCWindow, canvas: ClaudeCanvas? = nil, 
                 attribute(node, kAXChildrenAttribute) as? [AXUIElement] ?? []
             }, matching: { node in
                 if attribute(node, kAXRoleAttribute) as? String == kAXButtonRole,
-                   attribute(node, kAXTitleAttribute) as? String == "Use Project",
+                   let title = attribute(node, kAXTitleAttribute) as? String,
+                   ["使用此项目", "Use Project"].contains(title),
                    let pos = attribute(node, kAXPositionAttribute), CFGetTypeID(pos) == AXValueGetTypeID(),
                    let dim = attribute(node, kAXSizeAttribute), CFGetTypeID(dim) == AXValueGetTypeID() {
                     var p = CGPoint.zero, s = CGSize.zero

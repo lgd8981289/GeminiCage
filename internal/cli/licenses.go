@@ -10,7 +10,11 @@ import (
 // and the licenses of those parts, as embedded at build time.
 func licensesCmd(args []string, io IO) int {
 	if len(args) > 0 {
-		fmt.Fprintf(io.Stderr, "Usage: %s licenses\n", Command)
+		label := "Usage: "
+		if Command == "gemini-cage" {
+			label = "用法："
+		}
+		fmt.Fprintf(io.Stderr, "%s%s licenses\n", label, Command)
 		return 2
 	}
 	fmt.Fprint(io.Stdout, agentvm.License, "\n", agentvm.Notice, "\n", agentvm.ThirdPartyLicenses)

@@ -47,7 +47,7 @@ func runAgent(args []string, stdin io.Reader, stdout io.Writer, clientOnly bool)
 			if errors.As(err, &ae) {
 				reply.Error = ae
 			} else {
-				reply.Error = &workbench.AgentError{Code: "operation_failed", Message: "Cage could not complete the operation. Inspect diagnostics.", NextAction: "doctor"}
+				reply.Error = &workbench.AgentError{Code: "operation_failed", Message: "操作未完成，请查看诊断记录。", NextAction: "doctor"}
 			}
 			if reply.Error.Code == "invalid_input" || reply.Error.Code == "unknown_operation" {
 				code = 2
@@ -75,14 +75,14 @@ func runAgent(args []string, stdin io.Reader, stdout io.Writer, clientOnly bool)
 	operand := ""
 	if command == "call" || command == "job" || command == "request" || command == "socket" {
 		if len(args) == 0 {
-			return bad("call needs NAME; job needs ID; request needs METHOD /api/PATH; socket needs /api/PATH.")
+			return bad("call 需要操作名，job 需要任务编号，request 需要请求方法和 /api/ 路径，socket 需要 /api/ 路径。")
 		}
 		operand, args = args[0], args[1:]
 	}
 	requestPath := ""
 	if command == "request" {
 		if len(args) == 0 {
-			return bad("request needs METHOD /api/PATH")
+			return bad("request 需要请求方法和 /api/ 路径。")
 		}
 		requestPath, args = args[0], args[1:]
 	}
@@ -101,25 +101,25 @@ func runAgent(args []string, stdin io.Reader, stdout io.Writer, clientOnly bool)
 	contentType := flags.String("content-type", "application/json", "")
 	_ = flags.Bool("json", true, "")
 	if flags.Parse(args) != nil || flags.NArg() != 0 {
-		return bad("Usage: cage agent capabilities|doctor|init|service.start|host.inspect|call NAME|request METHOD /api/PATH|socket /api/PATH|routes|job ID|diagnostics [--config PATH] [--input -|FILE] [--wait 5m] [--output PATH]")
+		return bad("用法：cage agent capabilities|doctor|init|service.start|host.inspect|call NAME|request METHOD /api/PATH|socket /api/PATH|routes|job ID|diagnostics [--config PATH] [--input -|FILE] [--wait 5m] [--output PATH]")
 	}
 	if *wait < 0 || *wait > 24*time.Hour {
-		return bad("--wait must be between 0 and 24h.")
+		return bad("--wait 必须介于 0 和 24 小时之间。")
 	}
 	if *scope != "local" && *scope != "client" && *scope != "desktop" && *scope != "selected" {
-		return bad("scope must be local, client, desktop or selected")
+		return bad("scope 可选 local、client、desktop 或 selected。")
 	}
 	if command != "call" && command != "request" && command != "socket" && command != "job" && command != "routes" && command != "doctor" && command != "diagnostics" && (*scope != defaultScope || *connection != "") {
-		return bad("scope and connection apply to call, request, socket, job, routes, doctor and diagnostics")
+		return bad("scope 和 connection 适用于 call、request、socket、job、routes、doctor 和 diagnostics。")
 	}
 	if *input != "" && command != "call" && command != "request" {
-		return bad("--input is valid only for call and request.")
+		return bad("--input 仅适用于 call 和 request。")
 	}
 	if *output != "" && command != "diagnostics" && command != "request" {
-		return bad("--output is valid only for diagnostics and request.")
+		return bad("--output 仅适用于 diagnostics 和 request。")
 	}
 	if *wait != 0 && command != "call" && command != "job" {
-		return bad("--wait is valid only for call and job.")
+		return bad("--wait 仅适用于 call 和 job。")
 	}
 	if *config == "" {
 		home, err := os.UserHomeDir()
@@ -143,11 +143,11 @@ func runAgent(args []string, stdin io.Reader, stdout io.Writer, clientOnly bool)
 		response, err := workbench.AgentRequest(ctx, path, workbench.AgentTarget{Scope: *scope, Connection: *connection}, "GET", "/api/agent/routes", nil, "", "")
 		return finish(response.Data, err)
 	case "help", "--help", "capabilities":
-		return finish(map[string]any{"platform": runtime.GOOS, "arch": runtime.GOARCH, "commands": []string{"capabilities", "doctor", "init", "service.start", "host.inspect", "call NAME", "request METHOD /api/PATH", "socket /api/PATH", "routes", "job ID", "diagnostics"}, "operations": workbench.AgentOperations(), "routes": "agent routes reads the actual registered routes from the chosen live listener", "exit_codes": map[string]int{"completed_or_accepted": 0, "operation_failed": 1, "invalid_input": 2, "user_action_required": 3, "wait_timeout": 4}, "guide": "https://claude-cage.com/docs/agent/", "scope": "local: owning workload; desktop: client configuration; selected: explicit desktop connection generation; client: lightweight client listener", "request": map[string]any{"methods": []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"}, "path": "relative /api/ endpoint from the UI", "binary": "--input FILE --content-type application/octet-stream; --output ABSOLUTE_NEW_FILE", "native": "call native.submit --scope desktop; request GET /api/agent/native/ID --scope desktop; use the same native action and connection_id as the open window"}, "job_retention": "only the latest job; query promptly and never resubmit an unknown mutation automatically"}, nil)
+		return finish(map[string]any{"platform": runtime.GOOS, "arch": runtime.GOARCH, "commands": []string{"capabilities", "doctor", "init", "service.start", "host.inspect", "call NAME", "request METHOD /api/PATH", "socket /api/PATH", "routes", "job ID", "diagnostics"}, "operations": workbench.AgentOperations(), "routes": "运行 agent routes 可列出当前所连接服务提供的接口。", "exit_codes": map[string]int{"completed_or_accepted": 0, "operation_failed": 1, "invalid_input": 2, "user_action_required": 3, "wait_timeout": 4}, "guide": "https://github.com/lgd8981289/GeminiCage#命令行与自动化", "scope": "local 表示本机工作环境，desktop 表示桌面客户端配置，selected 表示明确选择的桌面连接，client 表示轻量客户端服务。", "request": map[string]any{"methods": []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"}, "path": "使用工作台的相对 /api/ 路径。", "binary": "用 --input FILE --content-type application/octet-stream 读取文件，用 --output ABSOLUTE_NEW_FILE 指定新文件的绝对路径。", "native": "用 call native.submit --scope desktop 提交操作，再用 request GET /api/agent/native/ID --scope desktop 查询。操作名和 connection_id 需与已打开的窗口一致。"}, "job_retention": "只保留最近一个任务。请及时查询，结果未知时先核对状态再决定是否重试。"}, nil)
 	case "init":
 		if _, err := os.Stat(path); err == nil {
 			if _, err := cage.Load(path); err != nil {
-				return finish(nil, &workbench.AgentError{Code: "config_invalid", Message: "Existing configuration is invalid. Preserve it and export diagnostics.", NextAction: "diagnostics"})
+				return finish(nil, &workbench.AgentError{Code: "config_invalid", Message: "当前配置无效，请保留配置并导出诊断包。", NextAction: "diagnostics"})
 			}
 			return finish(map[string]bool{"created": false}, nil)
 		} else if !os.IsNotExist(err) {
@@ -170,7 +170,7 @@ func runAgent(args []string, stdin io.Reader, stdout io.Writer, clientOnly bool)
 		return finish(map[string]bool{"created": err == nil}, err)
 	case "service.start":
 		if clientOnly {
-			return finish(nil, &workbench.AgentError{Code: "user_action_required", Message: "Open the installed Cage client to start its connection service", NextAction: "open_desktop"})
+			return finish(nil, &workbench.AgentError{Code: "user_action_required", Message: "请打开已安装的 Gemini Cage 以启动本机连接服务。", NextAction: "open_desktop"})
 		}
 		if err := host.ConfigureWindowsRuntime(); err != nil {
 			return finish(nil, err)
@@ -197,10 +197,10 @@ func runAgent(args []string, stdin io.Reader, stdout io.Writer, clientOnly bool)
 		return finish(agentDoctor(ctx, path), nil)
 	case "diagnostics":
 		if !filepath.IsAbs(*output) {
-			return bad("diagnostics requires --output with an absolute local ZIP path.")
+			return bad("导出诊断包时请用 --output 指定本机 ZIP 文件的绝对路径。")
 		}
 		if _, err := os.Lstat(*output); !os.IsNotExist(err) {
-			return bad("Choose a new output path; existing files are preserved.")
+			return bad("目标文件已存在，请选择新的输出路径。")
 		}
 		if *scope != "local" {
 			result, err := workbench.AgentRequest(ctx, path, workbench.AgentTarget{Scope: *scope, Connection: *connection}, "GET", "/api/diagnostics/export", nil, "", *output)
@@ -212,7 +212,7 @@ func runAgent(args []string, stdin io.Reader, stdout io.Writer, clientOnly bool)
 		return finish(map[string]string{"path": *output}, nil)
 	case "socket":
 		if *input != "" || *output != "" || *wait != 0 {
-			return bad("socket uses NDJSON stdin/stdout and no input/output/wait flags")
+			return bad("socket 使用 NDJSON 标准输入输出，不接受 --input、--output 或 --wait 参数。")
 		}
 		inputStream, ok := stdin.(io.ReadCloser)
 		if !ok {
@@ -238,10 +238,10 @@ func runAgent(args []string, stdin io.Reader, stdout io.Writer, clientOnly bool)
 		}
 		if *output != "" {
 			if !filepath.IsAbs(*output) {
-				return bad("output requires an absolute new file path")
+				return bad("请为输出文件指定新的绝对路径。")
 			}
 			if _, err := os.Lstat(*output); !os.IsNotExist(err) {
-				return bad("existing output files are preserved")
+				return bad("输出文件已存在，请指定新路径。")
 			}
 		}
 		result, err := workbench.AgentRequest(ctx, path, workbench.AgentTarget{Scope: *scope, Connection: *connection}, operand, requestPath, reader, *contentType, *output)
@@ -275,11 +275,11 @@ func runAgent(args []string, stdin io.Reader, stdout io.Writer, clientOnly bool)
 			}
 			var object map[string]json.RawMessage
 			if len(body) > 12<<20 || json.Unmarshal(body, &object) != nil || object == nil {
-				return bad("Input must be one JSON object of at most 12 MiB.")
+				return bad("输入必须是一个不超过 12 MiB 的 JSON 对象。")
 			}
 			for _, op := range workbench.AgentOperations() {
 				if op.Name == operand && !op.Mutates && len(object) > 0 {
-					return bad("Read operations accept no input fields.")
+					return bad("读取操作不接受输入字段。")
 				}
 			}
 			data, err = workbench.AgentCallTarget(ctx, path, workbench.AgentTarget{Scope: *scope, Connection: *connection}, operand, body)
@@ -321,14 +321,14 @@ func runAgent(args []string, stdin io.Reader, stdout io.Writer, clientOnly bool)
 			return finish(data, nil)
 		}
 		if job.Canceled {
-			return finish(data, &workbench.AgentError{Code: "job_canceled", Message: "The original job was canceled. Inspect status before retrying.", NextAction: "status"})
+			return finish(data, &workbench.AgentError{Code: "job_canceled", Message: "原任务已取消，请先读取 status，再决定是否重试。", NextAction: "status"})
 		}
 		if job.Error != "" {
 			return finish(data, &workbench.AgentError{Code: "job_failed", Message: job.Error, NextAction: "doctor"})
 		}
 		return finish(data, nil)
 	default:
-		return bad("Unknown agent command. Run cage agent capabilities.")
+		return bad("无法识别该命令，请运行 cage agent capabilities 查看支持的操作。")
 	}
 }
 
@@ -345,7 +345,7 @@ func agentWaitTarget(parent context.Context, path string, target workbench.Agent
 	for {
 		select {
 		case <-ctx.Done():
-			return latest, &workbench.AgentError{Code: "wait_timeout", Message: "Waiting ended; the job may still be running. Query the same job id.", NextAction: "job " + id, Retryable: true}
+			return latest, &workbench.AgentError{Code: "wait_timeout", Message: "等待时间已到，任务可能仍在运行，请使用原任务编号查询进度。", NextAction: "job " + id, Retryable: true}
 		case <-tick.C:
 			response, err := workbench.AgentRequest(ctx, path, target, "GET", "/api/agent/jobs/"+id, nil, "", "")
 			data := response.Data
@@ -358,7 +358,7 @@ func agentWaitTarget(parent context.Context, path string, target workbench.Agent
 			latest = data
 			var job workbench.Job
 			if json.Unmarshal(data, &job) != nil || job.ID != id {
-				return data, &workbench.AgentError{Code: "job_not_found", Message: "Original job state is unavailable. Inspect status before retrying.", NextAction: "status"}
+				return data, &workbench.AgentError{Code: "job_not_found", Message: "暂时无法获取原任务状态，请先查询 status 再重试。", NextAction: "status"}
 			}
 			if !job.Running {
 				return data, nil

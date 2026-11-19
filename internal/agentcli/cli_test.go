@@ -70,7 +70,7 @@ func TestAgentCLIRejectsSecretArgumentsAndMalformedJSON(t *testing.T) {
 
 func TestAgentWaitTimeoutKeepsOriginalJobID(t *testing.T) {
 	data, err := agentWait(context.Background(), filepath.Join(t.TempDir(), "config.json"), "012345abcdef", time.Millisecond)
-	if err == nil || data != nil || !strings.Contains(err.Error(), "job may still be running") {
+	if err == nil || data != nil || !strings.Contains(err.Error(), "任务可能仍在运行") {
 		t.Fatal(string(data), err)
 	}
 }

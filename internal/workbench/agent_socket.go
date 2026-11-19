@@ -19,7 +19,7 @@ import (
 // binary data uses JSON's []byte base64 encoding.
 func AgentSocket(ctx context.Context, configPath string, target AgentTarget, path string, input io.ReadCloser, output io.Writer) (returned error) {
 	if !strings.HasPrefix(path, "/api/") || strings.ContainsAny(path, "\r\n\\") || strings.Contains(path, "#") || strings.Contains(path, "://") {
-		return &AgentError{Code: "invalid_input", Message: "Use a relative /api/ WebSocket path", NextAction: "routes"}
+		return &AgentError{Code: "invalid_input", Message: "请使用以 /api/ 开头的相对 WebSocket 路径。", NextAction: "routes"}
 	}
 	c, err := agentConnectTarget(ctx, configPath, target)
 	if err != nil {
@@ -27,10 +27,10 @@ func AgentSocket(ctx context.Context, configPath string, target AgentTarget, pat
 	}
 	defer c.close()
 	if target.Scope == "desktop" {
-		return &AgentError{Code: "invalid_input", Message: "Use local or selected scope for a workload WebSocket", NextAction: "client.context"}
+		return &AgentError{Code: "invalid_input", Message: "连接工作环境的 WebSocket 时，请使用 local 或 selected 作用域。", NextAction: "client.context"}
 	}
 	if target.Scope == "client" && target.Connection == "" {
-		return &AgentError{Code: "invalid_input", Message: "Client sockets require an explicit connection generation", NextAction: "client.context"}
+		return &AgentError{Code: "invalid_input", Message: "建立客户端连接时必须明确指定当前连接标识。", NextAction: "client.context"}
 	}
 	connection := "local"
 	if target.Connection != "" {
@@ -47,7 +47,7 @@ func AgentSocket(ctx context.Context, configPath string, target AgentTarget, pat
 		if response != nil {
 			return agentHTTPError(response.StatusCode)
 		}
-		return &AgentError{Code: "connection_failed", Message: "WebSocket connection failed", NextAction: "status"}
+		return &AgentError{Code: "connection_failed", Message: "WebSocket 连接失败，请检查工作台服务。", NextAction: "status"}
 	}
 	defer ws.Close()
 	ws.SetReadLimit(32 << 20)
@@ -73,7 +73,7 @@ func AgentSocket(ctx context.Context, configPath string, target AgentTarget, pat
 		input.Close()
 		<-inputDone
 		if inputFailed.Load() {
-			returned = &AgentError{Code: "invalid_input", Message: "Invalid NDJSON WebSocket input; the failed input was not executed", NextAction: "capabilities"}
+			returned = &AgentError{Code: "invalid_input", Message: "WebSocket 输入不符合 NDJSON 格式，该条输入未执行。", NextAction: "capabilities"}
 		}
 	}()
 	go func() {
@@ -131,7 +131,7 @@ func AgentSocket(ctx context.Context, configPath string, target AgentTarget, pat
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 				return nil
 			}
-			return &AgentError{Code: "connection_closed", Message: "WebSocket closed; inspect the original session before reconnecting", NextAction: "status"}
+			return &AgentError{Code: "connection_closed", Message: "WebSocket 已关闭，请先查看原会话状态再连接。", NextAction: "status"}
 		}
 		var value any
 		switch kind {

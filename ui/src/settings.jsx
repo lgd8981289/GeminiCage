@@ -421,12 +421,12 @@ export function SettingsPanel({
                     onValueChange={(next) => update("locale", next)}
                   >
                     {[
-                      ["en_US.UTF-8", "English (United States)"],
+                      ["en_US.UTF-8", "英语（美国）"],
                       ["zh_CN.UTF-8", "简体中文"],
-                      ["zh_TW.UTF-8", "繁體中文"],
-                      ["ja_JP.UTF-8", "日本語"],
-                      ["de_DE.UTF-8", "Deutsch"],
-                      ["fr_FR.UTF-8", "Français"],
+                      ["zh_TW.UTF-8", "繁体中文"],
+                      ["ja_JP.UTF-8", "日语"],
+                      ["de_DE.UTF-8", "德语"],
+                      ["fr_FR.UTF-8", "法语"],
                     ].map(([value, label]) => (
                       <option key={value} value={value}>
                         {label}
@@ -453,12 +453,12 @@ export function SettingsPanel({
                     onValueChange={(next) => update("browser_language", next)}
                   >
                     {[
-                      ["en-US", "English (United States)"],
+                      ["en-US", "英语（美国）"],
                       ["zh-CN", "简体中文"],
-                      ["zh-TW", "繁體中文"],
-                      ["ja-JP", "日本語"],
-                      ["de-DE", "Deutsch"],
-                      ["fr-FR", "Français"],
+                      ["zh-TW", "繁体中文"],
+                      ["ja-JP", "日语"],
+                      ["de-DE", "德语"],
+                      ["fr-FR", "法语"],
                     ].map(([value, label]) => (
                       <option key={value} value={value}>
                         {label}
@@ -497,11 +497,11 @@ export function SettingsPanel({
                     onValueChange={(next) => update("clock_12_hour", next === "12")}
                   >
                     <option value="24">24 小时制</option>
-                    <option value="12">12 小时制（AM/PM）</option>
+                    <option value="12">12 小时制（上午／下午）</option>
                   </InlineSelect>
                 </label>
                 <p className="field-help">
-                  默认使用 24 小时制。保存后更新工作台底部时钟，无需重启环境；12 小时制使用 AM/PM 区分上午和下午。
+                  默认使用 24 小时制。保存后更新工作台底部时钟，无需重启环境；12 小时制会显示上午或下午。
                 </p>
                 <label>
                   Antigravity 终端启动参数

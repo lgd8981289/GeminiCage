@@ -48,7 +48,7 @@ try {
   await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
   await matched();
   const connections = display.stats.connections;
-  const selector = page.getByLabel("Desktop 显示大小", { exact: true });
+  const selector = page.getByLabel("桌面画面大小", { exact: true });
   const screen = page.locator(".desktop-screen");
   const toolbar = page.locator(".claude-desktop-toolbar");
   const toolbarBefore = await toolbar.boundingBox();

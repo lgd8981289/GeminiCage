@@ -37,7 +37,7 @@ function usageLabel(raw) {
   return [
     values.total ? `${bytes(used)} / ${bytes(values.total)}` : "",
     Number(values.expire) > 0
-      ? `到期 ${new Date(Number(values.expire) * 1000).toLocaleDateString()}`
+      ? `到期 ${new Date(Number(values.expire) * 1000).toLocaleDateString("zh-CN")}`
       : "",
   ]
     .filter(Boolean)
@@ -784,7 +784,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                     : "手动更新"}
                 </small>
                 <small>
-                  更新于 {new Date(s.updated_at).toLocaleString()}
+                  更新于 {new Date(s.updated_at).toLocaleString("zh-CN")}
                   {usageLabel(s.usage) && ` · ${usageLabel(s.usage)}`}
                 </small>
                 {s.error && (

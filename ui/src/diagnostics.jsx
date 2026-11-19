@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ArrowDownToLine, LoaderCircle } from "lucide-react";
 import { api, native, nativeAvailable } from "./api";
 import { reportDiagnostic } from "./diagnostics.mjs";
+import { httpErrorMessage } from "./error-message.mjs";
 import { isRemoteClient, runtimeURL } from "./client-context.mjs";
 
 export function DiagnosticSettings() {
@@ -25,14 +26,17 @@ export function DiagnosticSettings() {
       } else {
         // Fetch before downloading so authentication or disk failures are shown.
         const response = await fetch(runtimeURL("/diagnostics/export"));
-        if (!response.ok) throw new Error((await response.text()).trim() || "诊断包导出失败");
+        if (!response.ok) throw new Error(httpErrorMessage("/diagnostics/export", response.status, await response.text(), response.headers.get("content-type") || ""));
         if (!response.headers.get("content-type")?.startsWith("application/zip")) throw new Error("当前后台不支持诊断导出，请重新打开 Cage");
         const url = URL.createObjectURL(await response.blob());
         const link = document.createElement("a"); link.href = url; link.download = "cage-diagnostics.zip"; link.click();
         setTimeout(() => URL.revokeObjectURL(url), 30_000);
         setNotice("诊断包已下载。分享前请检查其中内容。");
       }
-    } catch (error) { setError(error.message); }
+    } catch (error) {
+      reportDiagnostic("frontend", error);
+      setError(/\p{Script=Han}/u.test(error.message) ? error.message : "诊断包下载中断，请确认工作台连接正常后再试。");
+    }
     finally { setBusy(false); }
   };
   return <section className="settings-group" aria-label="日志与诊断">

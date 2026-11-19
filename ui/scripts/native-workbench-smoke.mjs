@@ -24,7 +24,7 @@ for (const system of ["debian-13", "windows-11", "macos"]) {
 
     await nav.getByRole("button", { name: "Claude Desktop", exact: true }).click();
     await page.locator(".claude-desktop-toolbar").getByText("Claude Desktop", { exact:true }).waitFor();
-    const zoom = page.getByRole("combobox", {name:"Desktop 显示大小"});
+    const zoom = page.getByRole("combobox", {name:"桌面画面大小"});
     await zoom.click();
     await page.getByRole("option", {name:"125%"}).click();
     assert.match(await zoom.innerText(), /125%/);

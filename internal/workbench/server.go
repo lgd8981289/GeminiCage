@@ -509,7 +509,7 @@ func (s *Server) handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin, err := url.Parse(s.origin)
 		if err != nil || r.Host != origin.Host {
-			http.Error(w, "Host refused", 403)
+			http.Error(w, "主机地址不受信任，请从 Gemini Cage 重新打开。", 403)
 			return
 		}
 		w.Header().Set("Cache-Control", "no-store")
@@ -519,7 +519,7 @@ func (s *Server) handler() http.Handler {
 		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws://"+origin.Host+"; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
 		if (r.Method != "GET" && r.Method != "HEAD") || strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
 			if r.Header.Get("Origin") != s.origin {
-				http.Error(w, "Origin refused", 403)
+				http.Error(w, "请求来源不受信任，请从 Gemini Cage 重新打开。", 403)
 				return
 			}
 		}

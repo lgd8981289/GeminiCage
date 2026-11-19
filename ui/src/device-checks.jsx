@@ -26,10 +26,10 @@ export function DeviceChecks({ target, disabled = false }) {
     </div>
     {error && <p role="alert"><SafetyMessage message={error} /></p>}
     {report && <div aria-live="polite">
-      <p>{report.target === "desktop" ? "Antigravity" : "浏览器"} · {new Date(report.checked_at).toLocaleString()}</p>
+      <p>{report.target === "desktop" ? "Antigravity" : "浏览器"} · {new Date(report.checked_at).toLocaleString("zh-CN")}</p>
       {report.renderer_class && <p>实际图形环境：{renderers[report.renderer_class] || "未观测"}</p>}
       {report.browser && <details><summary>浏览器实际观测值</summary><dl>
-        <dt>User Agent</dt><dd>{report.browser.user_agent}</dd>
+        <dt>浏览器标识</dt><dd>{report.browser.user_agent}</dd>
         <dt>图形渲染器</dt><dd>{report.browser.webgl.renderer || "未观测"}</dd>
         <dt>显示尺寸</dt><dd>{report.browser.screen.width} × {report.browser.screen.height}，像素比 {report.browser.screen.pixel_ratio}</dd>
         <dt>诊断文档视口</dt><dd>{report.browser.viewport.width} × {report.browser.viewport.height}</dd>

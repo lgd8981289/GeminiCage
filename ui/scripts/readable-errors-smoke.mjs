@@ -10,12 +10,16 @@ for (const platform of ["darwin", "windows", "linux"]) {
   });
   const { page, browser, state, errors } = fixture;
   try {
-    state.status.job = { id: "readable-failure", kind: "start", running: false, message: "启动环境失败", error: "下载 Linux 镜像失败：等待下载服务器响应超时。请检查所选节点，再继续安装。", log: "fixture download timeout" };
+    state.status.job = { id: "readable-failure", kind: "start", running: false, message: "启动环境失败", error: "下载 Linux 镜像失败：等待下载服务器响应超时。请检查所选节点，再继续安装。", log_summary: "正在下载 Debian 13 镜像", log: "fixture download timeout" };
     await page.reload();
     await page.getByText("启动环境失败", { exact: true }).first().waitFor();
     await page.getByRole("alert").filter({ hasText: "等待下载服务器响应超时" }).first().waitFor();
     await page.getByRole("button", { name: "查看操作详情", exact: true }).first().click();
-    await page.getByRole("dialog", { name: "操作详情", exact: true }).getByText("fixture download timeout", { exact: true }).waitFor();
+    const details = page.getByRole("dialog", { name: "操作详情", exact: true });
+    await details.getByText("正在下载 Debian 13 镜像", { exact: true }).waitFor();
+    assert.equal(await details.getByText("fixture download timeout").isVisible(), false);
+    await details.getByText("查看原始日志", { exact: true }).click();
+    await details.getByText("fixture download timeout", { exact: true }).waitFor();
     await page.keyboard.press("Escape");
     await page.screenshot({ path: `${output}/${platform}-startup.png` });
 
@@ -35,6 +39,28 @@ for (const platform of ["darwin", "windows", "linux"]) {
     });
     assert.match(malformed, /资源配置.*格式无效/);
     assert.ok(!malformed.includes("private-test-secret"));
+    // Trigger native constraint validation in this English-language browser.
+    await page.evaluate(() => {
+      const form = document.createElement("form");
+      form.id = "required-test";
+      form.innerHTML = '<input aria-label="必填校验" required type="number" min="2"><button>提交校验</button>';
+      form.addEventListener("submit", e => e.preventDefault());
+      document.body.appendChild(form);
+    });
+    const form = page.locator("#required-test");
+    await form.getByRole("button").click();
+    await form.getByText("请填写或选择此项。", { exact: true }).waitFor();
+    await form.getByRole("spinbutton").fill("1");
+    await form.getByRole("button").click();
+    await form.getByText("数值不能小于 2。", { exact: true }).waitFor();
+    await form.getByRole("spinbutton").fill("2");
+    await form.getByRole("button").click();
+    assert.equal(await form.getByRole("alert").count(), 0);
+    const invalidURL = await page.evaluate(async () => {
+      const { normalizeURL } = await import("/src/api.js");
+      try { normalizeURL("http://["); } catch (error) { return error.message; }
+    });
+    assert.match(invalidURL, /网址格式无效/);
     assert.deepEqual(errors, []);
     await writeFile(`${output}/${platform}.json`, JSON.stringify({ platform, failure, malformed }, null, 2));
     console.log(`PASS: ${platform} readable failures`);

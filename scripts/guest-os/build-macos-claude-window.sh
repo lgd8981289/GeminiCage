@@ -3,8 +3,8 @@
 set -euo pipefail
 src=$(cd "$(dirname "$0")" && pwd)
 . "$src/macos-guest-arch.sh"
-app=${1:?Specify a new output .app path}
-[[ $app == *.app && ! -e $app ]] || { echo 'Choose a new .app path.' >&2; exit 2; }
+app=${1:?请指定新的 .app 输出路径}
+[[ $app == *.app && ! -e $app ]] || { echo '请指定一个尚未使用的 .app 路径。' >&2; exit 2; }
 mkdir -p "$app/Contents/MacOS"
 cat > "$app/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -21,7 +21,7 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 </dict></array>
 <key>LSUIElement</key><true/>
 <key>CFBundleDocumentTypes</key><array><dict>
-<key>CFBundleTypeName</key><string>Cage project file</string>
+<key>CFBundleTypeName</key><string>Cage 项目文件</string>
 <key>CFBundleTypeRole</key><string>Viewer</string>
 <key>LSHandlerRank</key><string>None</string>
 <key>LSItemContentTypes</key><array><string>public.data</string></array>

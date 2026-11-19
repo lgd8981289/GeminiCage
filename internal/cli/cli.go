@@ -152,31 +152,39 @@ func versionCmd(args []string, io IO) int {
 		fmt.Fprintln(io.Stdout, version.Version)
 		return 0
 	}
+	usageMissing, usageUnknown := "Error: --min needs a version (e.g. --min 0.2.0)", "Error: unknown option for version: %s\n"
+	usageValue := "Error: --min expects a version like 1.2.3 (got: '%s')\n"
+	older, update := "Error: %s %s is older than the required %s.\n", "  Update it:  %s\n"
+	if Command == "gemini-cage" {
+		usageMissing, usageUnknown = "--min 后需要填写版本号，例如 --min 0.2.0。", "version 不支持此选项：%s\n"
+		usageValue = "--min 需要形如 1.2.3 的版本号，收到的是“%s”。\n"
+		older, update = "%s 核心版本 %s 低于所需的 %s。\n", "更新方式：%s\n"
+	}
 	want := ""
 	for len(args) > 0 {
 		switch a := args[0]; {
 		case a == "--min":
 			if len(args) < 2 {
-				fmt.Fprintln(io.Stderr, "Error: --min needs a version (e.g. --min 0.2.0)")
+				fmt.Fprintln(io.Stderr, usageMissing)
 				return 2
 			}
 			want, args = args[1], args[2:]
 		case strings.HasPrefix(a, "--min="):
 			want, args = strings.TrimPrefix(a, "--min="), args[1:]
 		default:
-			fmt.Fprintf(io.Stderr, "Error: unknown option for version: %s\n", a)
+			fmt.Fprintf(io.Stderr, usageUnknown, a)
 			return 2
 		}
 	}
 	if !versionRe.MatchString(want) {
-		fmt.Fprintf(io.Stderr, "Error: --min expects a version like 1.2.3 (got: '%s')\n", want)
+		fmt.Fprintf(io.Stderr, usageValue, want)
 		return 2
 	}
 	if version.AtLeast(version.Version, want) {
 		return 0
 	}
-	fmt.Fprintf(io.Stderr, "Error: %s %s is older than the required %s.\n", Command, version.Version, want)
-	fmt.Fprintf(io.Stderr, "  Update it:  %s\n", updateCommand())
+	fmt.Fprintf(io.Stderr, older, Command, version.Version, want)
+	fmt.Fprintf(io.Stderr, update, updateCommand())
 	return 1
 }
 

@@ -44,7 +44,7 @@ const statusLabels = {
   pending: "等待登录", ready: "已登录", signed_out: "需要登录",
   duplicate: "账号已在列表中", changed: "登录身份已改变",
 };
-const localTimestamp = new Intl.DateTimeFormat(undefined, {
+const localTimestamp = new Intl.DateTimeFormat("zh-CN", {
   month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit",
 });
 const timeLabel = (seconds) => localTimestamp.format(seconds * 1000);

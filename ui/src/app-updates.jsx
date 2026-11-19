@@ -116,7 +116,7 @@ export function AppUpdateButton({ updates }) {
     : state.phase === "installing" ? "正在安装更新，完成后自动重启"
     : state.phase === "checking" ? "正在准备更新"
     : coolingDown ? "等待重试更新" : failed ? "重试更新" : manual ? "查看新版本" : "下载更新";
-  const hint = coolingDown ? `${state.message || "更新源请求受限"}，可于 ${new Date(state.retryAt).toLocaleString()} 后重试`
+  const hint = coolingDown ? `${state.message || "更新源请求受限"}，可于 ${new Date(state.retryAt).toLocaleString("zh-CN")} 后重试`
     : failed ? `${state.message || "更新未完成"}，点击重试`
     : busy ? label
     : manual ? `新版本 ${state.latestVersion} 已发布。${state.message || ""}点击打开发布页面。`

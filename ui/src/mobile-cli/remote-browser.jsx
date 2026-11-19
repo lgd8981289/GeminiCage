@@ -242,7 +242,7 @@ export function RemoteDisplay({visible, onBack, onReopen, id, tool, start, initi
       onPointerCancel={() => {gesture.current = null; controls.current?.cancelScroll();}} onWheel={wheel} onContextMenu={e => {if (!favorites) e.preventDefault();}}>
       {frame && favorites ? <PhoneFavorites frame={frame} navigate={url => controls.current.navigate(url)} onClose={() => setFavorites(false)}/> :
        frame ? <div className={reading ? "display-surface reading" : "display-surface"} ref={surface}>
-        <img className="remote-screen" alt={desktop ? "远程 Desktop 画面" : "远程浏览器画面"} src={frame.image} draggable={false} />
+        <img className="remote-screen" alt={desktop ? "远程桌面画面" : "远程浏览器画面"} src={frame.image} draggable={false} />
       </div> :
         <div className="remote-empty" role={state.error ? "alert" : "status"}>
           {preview ? <><Globe2 aria-hidden="true" /><p>连接真实电脑后，即可使用{name}。</p></> :
@@ -253,7 +253,7 @@ export function RemoteDisplay({visible, onBack, onReopen, id, tool, start, initi
                 if (state.reopen) onReopen();
                 else controls.current.refresh();
               }}>{state.reopen ? "重新打开" : "重新读取画面"}</button></> :
-              <><LoaderCircle className="spin" aria-hidden="true" /><p>{state.waiting ? `正在启动远程${desktop ? " 桌面应用" : "浏览器"}…` : "正在读取远程画面…"}</p></>}
+              <><LoaderCircle className="spin" aria-hidden="true" /><p>{state.waiting ? `正在启动远程${desktop ? "桌面应用" : "浏览器"}…` : "正在读取远程画面…"}</p></>}
         </div>}
     </div>
     {typing ? (login

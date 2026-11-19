@@ -397,7 +397,7 @@ try {
   desktopEnabled = true;
   await page.getByRole("button",{name:"重新打开",exact:true}).click();
   await page.getByText("正在启动远程 桌面应用…").waitFor();
-  const desktop = page.getByRole("img",{name:"远程 Desktop 画面"});
+  const desktop = page.getByRole("img",{name:"远程桌面画面"});
   await desktop.waitFor();
   const logicalWidth = frame.width;
   const fit = await desktop.boundingBox();

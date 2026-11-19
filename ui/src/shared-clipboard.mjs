@@ -57,8 +57,8 @@ export function shareClipboard({ connect, native, onStatus, setActive, interval 
   const warn = () => { if (!disposed && !errorShown) { errorShown = true; onStatus("剪贴板共享暂未完成。请检查文件和大小；若格式无法安全清理，可在设置→通用中明确允许原样传递，元数据可能保留。"); } };
   const send = (connection, content) => new Promise((resolve, reject) => {
     const id = ++serial;
-    const timeout = setTimeout(() => { acknowledgements.delete(id); reject(new Error("Clipboard acknowledgement timed out")); }, 8000);
-    acknowledgements.set(id, { resolve: () => { clearTimeout(timeout); resolve(); }, reject: () => { clearTimeout(timeout); reject(new Error("Clipboard disconnected")); } });
+    const timeout = setTimeout(() => { acknowledgements.delete(id); reject(new Error("等待客机确认剪贴板超时，请重新复制后再试。")); }, 8000);
+    acknowledgements.set(id, { resolve: () => { clearTimeout(timeout); resolve(); }, reject: () => { clearTimeout(timeout); reject(new Error("剪贴板连接已断开，请重新连接客机。")); } });
     try { connection.send(JSON.stringify({ ...content, serial: id })); }
     catch { acknowledgements.get(id)?.reject(); acknowledgements.delete(id); }
   });
@@ -71,7 +71,7 @@ export function shareClipboard({ connect, native, onStatus, setActive, interval 
     let releaseFiles = () => {};
     try {
       const current = await native("clipboardRevision");
-      if (typeof current !== "number") throw new Error("Clipboard revision unavailable");
+      if (typeof current !== "number") throw new Error("暂时无法读取剪贴板状态，请重新连接客机。");
       if (!initial && current === revision && current === acknowledgedRevision) return;
       const value = await native("clipboardSyncRead");
       releaseFiles = retainFiles(value);
@@ -80,7 +80,7 @@ export function shareClipboard({ connect, native, onStatus, setActive, interval 
       if (disposed || !guestReady || socket !== currentSocket || currentGeneration !== generation ||
           value.revision !== finalRevision) return;
       revision = value.revision;
-      if (!content) throw new Error("Clipboard content unavailable");
+      if (!content) throw new Error("未读取到剪贴板内容，请重新复制。");
       const encoded = JSON.stringify(content);
       if (initial || value.revision !== acknowledgedRevision || encoded !== lastPayload) await send(currentSocket, content);
       if (disposed || !guestReady || socket !== currentSocket || currentGeneration !== generation) return;
@@ -95,7 +95,7 @@ export function shareClipboard({ connect, native, onStatus, setActive, interval 
       setActive(false);
       revision = undefined; lastPayload = "";
       currentSocket.close();
-      throw new Error("Clipboard synchronization failed");
+      throw new Error("剪贴板同步失败，请检查客机连接后重试。");
     } finally { releaseFiles(); }
   };
   const poll = (initial = false) => {

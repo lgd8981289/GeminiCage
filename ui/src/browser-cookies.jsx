@@ -73,7 +73,7 @@ export function BrowserCookies({ tab, onClose }) {
               title={cookie.partitionKeyOpaque ? "此分区 Cookie 需要清空所有网站" : "删除此 Cookie"}
               onClick={() => run("delete", cookie.key)}><Trash2 size={14} /></button></div>
           <div className="cookie-metadata">{cookie.domain} · 路径 {cookie.path} · {cookie.size} B</div>
-          <div className="cookie-metadata">{cookie.session ? "会话结束时过期" : `过期：${new Date(cookie.expires * 1000).toLocaleString()}`}
+          <div className="cookie-metadata">{cookie.session ? "会话结束时过期" : `过期：${new Date(cookie.expires * 1000).toLocaleString("zh-CN")}`}
             {cookie.secure && " · Secure"}{cookie.httpOnly && " · HttpOnly"}{cookie.sameSite && ` · SameSite=${cookie.sameSite}`}
             {(cookie.partitionKey || cookie.partitionKeyOpaque) && ` · 分区：${cookie.partitionKey?.topLevelSite || "不透明"}`}</div>
           {value?.key === cookie.key && <pre className="cookie-value">{value.value || "（空值）"}</pre>}

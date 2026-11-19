@@ -20,6 +20,8 @@ func executionFailure(action string, err error, output string) error {
 		patterns     []string
 		reason, next string
 	}{
+		{[]string{"project path contains whitespace"}, "共享目录路径含有空格，客机无法挂载", "请在工作台选择不含空格的项目路径，然后继续安装。旧版默认传输目录遇到此问题时，请更新 Gemini Cage 后继续。"},
+		{[]string{"curl: (35)", "tls handshake timeout"}, "与下载服务器建立加密连接失败", "请检查网络与代理连接，确认电脑时间正确后重试。"},
 		{[]string{"base vm not found"}, "基础模板缺失，无法创建或重置环境", "请先完成环境安装；已有环境的磁盘应保留，不要删除或重置个人数据。"},
 		{[]string{"base vm setup did not complete"}, "基础模板尚未安装完成", "请继续环境安装后重试；已有环境的磁盘应保留，不要删除或重置个人数据。"},
 		{[]string{"cage_windows_maintenance_authorization_canceled"}, "已取消 Windows 管理员授权", "请重新发起原操作，并在 Windows 系统授权窗口中确认。"},

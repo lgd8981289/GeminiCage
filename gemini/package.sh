@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.."
 base_app=${GEMINI_CAGE_BASE_APP:-/Applications/Cage.app}
 kit="$base_app/Contents"
 if [[ ! -f "$kit/Info.plist" ]]; then
-    echo "Set GEMINI_CAGE_BASE_APP to the Cage.app from the upstream v0.1.8 macOS arm64 disk image." >&2
+    echo "请将 GEMINI_CAGE_BASE_APP 设为上游 v0.1.8 macOS arm64 安装包中 Cage.app 的路径。" >&2
     exit 1
 fi
 [[ "$(/usr/libexec/PlistBuddy -c 'Print :CageVersion' "$kit/Info.plist")" = "$(cat VERSION)" ]]
@@ -19,9 +19,11 @@ mkdir -p "$res" "$contents/MacOS"
 for component in mihomo guest-os licenses cloud-linux-amd64.tar cloud-linux-amd64.tar.sha256; do
     ditto "$kit/Resources/$component" "$res/$component"
 done
-# Rebuild the fork's guest window verifier from source. Other guest kit components match the pinned upstream release.
+# Rebuild both guest helpers that implement the project authorization dialog.
 mv "$res/guest-os/Cage Guest Window.app" "$stage/upstream-window.app"
 bash scripts/guest-os/build-macos-claude-window.sh "$res/guest-os/Cage Guest Window.app"
+mv "$res/guest-os/project/CageProjectAccess.app" "$stage/upstream-project-access.app"
+bash scripts/guest-os/build-macos-project-access.sh "$res/guest-os/project/CageProjectAccess.app"
 for script in claude-desktop-macos.sh prepare-macos-media.sh provision-macos-workbench.sh; do
     cp "scripts/guest-os/$script" "$res/guest-os/$script"
 done

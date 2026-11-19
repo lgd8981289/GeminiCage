@@ -200,7 +200,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
     }
     @objc private func copyGuestLoginPassword() {
         do { try MacGuestLoginCredential.copyForLogin() }
-        catch { let alert = NSAlert(error: error); alert.beginSheetModal(for: window) }
+        catch { showLocalError("无法复制客机登录密码", "请在工作台检查客机登录状态，再重新复制。") }
     }
     @objc private func settings() { action("settings") }
     @objc private func openPreviousGuest() {
@@ -208,7 +208,14 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/bin/python3")
         task.arguments = ["-I", "-B", script.path]
-        do { try task.run() } catch { NSAlert(error: error).runModal() }
+        do { try task.run() } catch { showLocalError("无法打开旧版环境", "请检查旧版启动组件是否完整，再重新打开。") }
+    }
+    private func showLocalError(_ title: String, _ detail: String) {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = detail
+        alert.addButton(withTitle: "确定")
+        alert.beginSheetModal(for: window)
     }
     @objc private func openProject() { action("openProject") }
     @objc private func newTab() { action("newTab") }
@@ -431,7 +438,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
             }
         case "exportDiagnostics":
             guard !nativeFilePanelOpen else { replyHandler(nil,"请先完成当前文件窗口"); return }
-            let panel = NSSavePanel(); panel.title = "导出诊断包"; panel.nameFieldStringValue = "cage-diagnostics.zip"
+            let panel = NSSavePanel(); panel.title = "导出诊断包"; panel.prompt = "保存诊断包"; panel.nameFieldStringValue = "cage-diagnostics.zip"
             panel.allowedContentTypes = [.zip]; nativeFilePanelOpen = true
             panel.beginSheetModal(for: window) { response in
                 self.nativeFilePanelOpen = false
@@ -545,7 +552,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
             let panel = NSOpenPanel()
             panel.canChooseDirectories = false; panel.canChooseFiles = true; panel.allowsMultipleSelection = false
             panel.allowedContentTypes = [UTType(filenameExtension: "ipsw") ?? .data]
-            panel.title = "选择 Apple 恢复镜像"; nativeFilePanelOpen = true
+            panel.prompt = "选择镜像"; panel.title = "选择 Apple 恢复镜像"; nativeFilePanelOpen = true
             panel.beginSheetModal(for: window) { response in
                 self.nativeFilePanelOpen = false
                 replyHandler(response == .OK ? (panel.url?.path ?? "") : "", nil)
@@ -672,13 +679,13 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         default: replyHandler(nil,"未知操作")
         }
     }
-    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) { let alert = NSAlert(); alert.messageText = message; alert.beginSheetModal(for:window){_ in completionHandler()} }
+    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) { let alert = NSAlert(); alert.messageText = message; alert.addButton(withTitle: "确定"); alert.beginSheetModal(for:window){_ in completionHandler()} }
     func webView(_ webView: WKWebView, runOpenPanelWith parameters: WKOpenPanelParameters, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping ([URL]?) -> Void) {
         let origin = frame.securityOrigin
         guard frame.isMainFrame, origin.protocol == "http", origin.host == "localhost", origin.port == expectedPort, !nativeFilePanelOpen else { completionHandler(nil); return }
         let panel = NSOpenPanel(); panel.canChooseFiles = true; panel.canChooseDirectories = false
         panel.allowsMultipleSelection = parameters.allowsMultipleSelection
-        panel.title = "选择本机文件"; nativeFilePanelOpen = true
+        panel.prompt = "选择文件"; panel.title = "选择本机文件"; nativeFilePanelOpen = true
         panel.beginSheetModal(for: window) { response in
             self.nativeFilePanelOpen = false
             completionHandler(response == .OK ? panel.urls : nil)

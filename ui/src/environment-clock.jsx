@@ -5,7 +5,7 @@ export function EnvironmentClock({ timezone, clock12Hour = false }) {
   const formatter = useMemo(() => {
     if (!timezone) return null;
     try {
-      return new Intl.DateTimeFormat("en-GB", {
+      return new Intl.DateTimeFormat("zh-CN", {
         timeZone: timezone,
         weekday: "short",
         hour: "2-digit",
@@ -35,6 +35,6 @@ export function EnvironmentClock({ timezone, clock12Hour = false }) {
 
   const label = formatter ? `当地时间（${timezone}）` : "当地时间：时区不可用";
   return <time className="status-clock" dateTime={new Date(now).toISOString()} title={label} aria-label={label}>
-    {formatter ? formatter.formatToParts(now).map(({ type, value }) => type === "dayPeriod" ? value.toUpperCase() : value).join("") : "--:--"}
+    {formatter ? formatter.format(now) : "--:--"}
   </time>;
 }

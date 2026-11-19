@@ -33,36 +33,34 @@ import (
 	"syscall"
 )
 
-const help = `Gemini Cage — isolated Gemini and Antigravity workbench
+const help = `Gemini Cage — Gemini 和 Antigravity 隔离工作台
 
-cage desktop       Open the unified Cage workbench (desktop launcher)
-cage agent         Discover and use the versioned, JSON-only external Agent interface
-cage serve         Run its private localhost control service
-cage server-entry --json  Issue a private SSH remote connection entry
-cage container-configure --json  Configure a Linux container from JSON stdin
-cage init          Create a private profile; add and select nodes in Cage settings
-cage check         Verify proxy transport (no VM required)
-cage guest-os --json  Check host prerequisites for a same-system guest
-                     On Windows, add --vm-id GUID to inspect one Hyper-V VM
-cage proxy-start   Start Cage's bundled proxy core with the applied node
-cage proxy-stop    Stop Cage's core and close external networking
-cage setup         Build the isolated base VM through the specified proxy
-cage up            Start the shared Cage environment, editor and browser
-cage login         Start the legacy terminal sign-in flow inside the VM
-cage access        Inspect legacy viewer credentials (diagnostics only)
-cage shell         Open a shell in the shared environment
-cage run COMMAND   Execute a command in the shared environment
-cage stop          Stop the shared Cage environment and its proxy core
-                   --keep-proxy keeps the core running for an environment restart
-cage list          List this cage profile's VMs
-cage doctor        Diagnose the VM
-cage diagnostics --json PATH.zip   Export a redacted diagnostic bundle
-cage version       Print this build's version. --min VERSION fails if older
-cage licenses      Print third-party license notices
+cage desktop       打开桌面工作台
+cage agent         查看自动化接口及其 JSON 输入输出格式
+cage serve         启动仅供本机访问的控制服务
+cage server-entry --json  生成用于 SSH 远程连接的私有入口
+cage container-configure --json  从标准输入读取 JSON 并配置 Linux 容器
+cage init          创建独立配置，随后在工作台添加并选择代理节点
+cage check         检查代理连接，无需启动客机
+cage guest-os --json  检查主机是否满足安装同类客机的条件
+                      Windows 可用 --vm-id GUID 指定一台 Hyper-V 客机
+cage proxy-start   按已应用的节点启动代理服务
+cage proxy-stop    停止代理服务并关闭客机外网
+cage setup         通过指定代理准备基础镜像
+cage up            启动工作环境、编辑器和浏览器
+cage login         在客机中启动兼容终端的登录流程
+cage access        查看旧版查看器的凭据，仅用于诊断
+cage shell         打开客机终端
+cage run COMMAND   在客机中运行指定命令
+cage stop          停止工作环境和代理；加 --keep-proxy 可在重启环境时保留代理
+cage list          列出当前配置中的客机
+cage doctor        诊断虚拟机问题
+cage diagnostics --json PATH.zip   导出脱敏诊断包
+cage version       显示核心版本；用 --min VERSION 检查是否达到最低版本
+cage licenses      显示第三方许可声明
 
-Configuration: ~/Library/GeminiCage/config.json (override GEMINI_CAGE_CONFIG).
-Each configuration directory is an independent cage profile.
-Only explicitly opened project folders are shared. Host sign-in credentials are not imported.
+配置路径：~/Library/GeminiCage/config.json，可通过 GEMINI_CAGE_CONFIG 指定其他路径。
+每个配置目录对应一个独立环境。客机只能访问已授权的项目文件夹，主机登录凭据不会自动导入。
 `
 
 func main() {
@@ -92,7 +90,7 @@ func run() int {
 	}
 	// The shared commands otherwise name agent-vm and suggest its installer.
 	cli.Command = "gemini-cage"
-	cli.UpdateHint = "update Cage from the app, or with the installer or package that installed it"
+	cli.UpdateHint = "从 GeminiCage 项目的发行页面下载新版安装包。"
 	args := os.Args[1:]
 	if len(args) > 0 && args[0] == "host-download" {
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -125,7 +123,7 @@ func run() int {
 	}
 	if len(args) == 1 && (args[0] == "verify-macos-guest" || args[0] == "verify-macos-trial") {
 		if !macGuestLoginAvailable() {
-			return fail(fmt.Errorf("this helper was built without the virtual Mac login view"))
+			return fail(fmt.Errorf("此版本缺少虚拟 Mac 登录窗口组件。"))
 		}
 		return 0
 	}
@@ -178,7 +176,7 @@ func run() int {
 	diagnostics.SetDefault(store)
 	if args[0] == "windows-network-host" {
 		if len(args) != 1 {
-			return fail(fmt.Errorf("windows-network-host takes its bound configuration from the profile"))
+			return fail(fmt.Errorf("windows-network-host 使用当前环境已绑定的配置。"))
 		}
 		if err := workbench.ServeWindowsPacketNetwork(path); err != nil {
 			return fail(err)
@@ -187,7 +185,7 @@ func run() int {
 	}
 	if args[0] == "container-runtime" {
 		if len(args) != 2 {
-			return fail(fmt.Errorf("container-runtime prepare|start|stop|inspect"))
+			return fail(fmt.Errorf("用法：container-runtime prepare|start|stop|inspect"))
 		}
 		environment, err := containerenv.Load(filepath.Dir(path))
 		if err != nil {
@@ -209,7 +207,7 @@ func run() int {
 				err = json.NewEncoder(os.Stdout).Encode(inspection)
 			}
 		default:
-			err = fmt.Errorf("container-runtime prepare|start|stop|inspect")
+			err = fmt.Errorf("用法：container-runtime prepare|start|stop|inspect")
 		}
 		if err != nil {
 			return fail(err)
@@ -218,7 +216,7 @@ func run() int {
 	}
 	if args[0] == "container-configure" {
 		if len(args) != 2 || args[1] != "--json" {
-			return fail(fmt.Errorf("container-configure --json < configuration.json"))
+			return fail(fmt.Errorf("用法：container-configure --json < configuration.json"))
 		}
 		if err := configureContainer(path); err != nil {
 			return fail(err)
@@ -227,7 +225,7 @@ func run() int {
 	}
 	if args[0] == "container-install-script" {
 		if len(args) != 2 {
-			return fail(fmt.Errorf("container-install-script tools|services"))
+			return fail(fmt.Errorf("用法：container-install-script tools|services"))
 		}
 		script, err := containerInstallScript(args[1])
 		if err != nil {
@@ -267,7 +265,7 @@ func run() int {
 	}
 	if args[0] == "server-entry" {
 		if len(args) != 2 || args[1] != "--json" {
-			return fail(fmt.Errorf("server-entry --json"))
+			return fail(fmt.Errorf("用法：server-entry --json"))
 		}
 		entry, err := workbench.ServerEntry(path)
 		if err != nil {
@@ -301,7 +299,7 @@ func run() int {
 			args = []string{args[0], args[1], args[4]}
 		}
 		if len(args) != 3 || args[1] != "--json" {
-			return fail(fmt.Errorf("diagnostics --json /absolute/path.zip"))
+			return fail(fmt.Errorf("用法：diagnostics --json /absolute/path.zip"))
 		}
 		if err := workbench.ExportDiagnosticsForConnection(workbench.DesktopHelperConfig(path, connection), connection, args[2]); err != nil {
 			diagnostics.Log("error", "command", err.Error())
@@ -323,14 +321,14 @@ func run() int {
 	connectionID := ""
 	if (args[0] == "clipboard-files" || args[0] == "upload-files" || args[0] == "browser-file" || args[0] == "desktop-file" || args[0] == "share-project") && len(args) >= 3 && args[2] == "--connection" {
 		if len(args) < 4 || args[3] == "" {
-			return fail(fmt.Errorf("missing file connection identity"))
+			return fail(fmt.Errorf("缺少文件所属的连接标识。"))
 		}
 		connectionID = args[3]
 		args = append(append([]string{}, args[:2]...), args[4:]...)
 	}
 	if args[0] == "clipboard-files" {
 		if len(args) < 4 || args[1] != "--json" {
-			return fail(fmt.Errorf("clipboard-files --json --connection ID send|receive PATH..."))
+			return fail(fmt.Errorf("用法：clipboard-files --json --connection ID send|receive PATH..."))
 		}
 		result, err := workbench.ClipboardFilesForConnection(workbench.DesktopHelperConfig(path, connectionID), connectionID, args[2], args[3:])
 		if err != nil {
@@ -342,7 +340,7 @@ func run() int {
 	}
 	if args[0] == "desktop-file" {
 		if len(args) != 3 || args[1] != "--json" {
-			return fail(fmt.Errorf("desktop-file --json --connection ID REQUEST"))
+			return fail(fmt.Errorf("用法：desktop-file --json --connection ID REQUEST"))
 		}
 		result, err := workbench.DesktopFileForConnection(workbench.DesktopHelperConfig(path, connectionID), connectionID, args[2])
 		if err != nil {
@@ -354,7 +352,7 @@ func run() int {
 	}
 	if args[0] == "share-project" {
 		if connectionID == "" || len(args) != 4 || args[1] != "--json" || (args[2] != "read" && args[2] != "write") {
-			return fail(fmt.Errorf("share-project --json --connection ID read|write DIRECTORY"))
+			return fail(fmt.Errorf("用法：share-project --json --connection ID read|write DIRECTORY"))
 		}
 		result, err := workbench.ShareNativeCloudProject(workbench.DesktopHelperConfig(path, connectionID), connectionID, args[3], args[2] == "read")
 		if err != nil {
@@ -366,7 +364,7 @@ func run() int {
 	}
 	if args[0] == "upload-files" {
 		if len(args) < 5 || args[1] != "--json" {
-			return fail(fmt.Errorf("upload-files --json browser|desktop|terminal ID PATH..."))
+			return fail(fmt.Errorf("用法：upload-files --json browser|desktop|terminal ID PATH..."))
 		}
 		result, err := workbench.UploadHostFilesForConnection(workbench.DesktopHelperConfig(path, connectionID), connectionID, args[2], args[3], args[4:])
 		if err != nil {
@@ -379,7 +377,7 @@ func run() int {
 	}
 	if args[0] == "browser-file" {
 		if len(args) < 4 || len(args) > 5 || args[1] != "--json" {
-			return fail(fmt.Errorf("browser-file --json save|open|reveal ID [destination]"))
+			return fail(fmt.Errorf("用法：browser-file --json save|open|reveal ID [destination]"))
 		}
 		destination := ""
 		if len(args) == 5 {
@@ -418,7 +416,7 @@ func run() int {
 			case "--existing":
 				options.UseExisting = true
 			default:
-				return fail(fmt.Errorf("unknown desktop option: %s", argument))
+				return fail(fmt.Errorf("无法识别桌面选项 %s", argument))
 			}
 		}
 		entry, err := workbench.DesktopEntry(path, options)
@@ -453,7 +451,7 @@ func run() int {
 			case "--json":
 				returnJSON = true
 			default:
-				return fail(fmt.Errorf("unknown prepare-update option: %s", argument))
+				return fail(fmt.Errorf("无法识别更新准备选项 %s", argument))
 			}
 		}
 		result, err := workbench.PrepareDesktopUpdate(path, stop)
@@ -598,11 +596,11 @@ func run() int {
 		req, _ := http.NewRequestWithContext(context.Background(), "GET", "https://1.1.1.1/cdn-cgi/trace", nil)
 		r, err := client.Do(req)
 		if err != nil {
-			return fail(fmt.Errorf("proxy transport check failed (no direct fallback)"))
+			return fail(fmt.Errorf("代理连接检查失败，请检查已选节点；客机未切换为直连。"))
 		}
 		r.Body.Close()
 		if r.StatusCode != 200 {
-			return fail(fmt.Errorf("proxy check returned HTTP %d", r.StatusCode))
+			return fail(fmt.Errorf("代理检测返回 HTTP %d", r.StatusCode))
 		}
 		fmt.Println("Proxy transport OK. Guest traffic still requires VM acceptance checks.")
 		return 0
@@ -660,7 +658,7 @@ func run() int {
 	}
 	allowed := map[string]bool{"setup": true, "run": true, "shell": true, "claude": true, "stop": true, "list": true, "doctor": true, "info": true, "name": true}
 	if !allowed[args[0]] {
-		return fail(fmt.Errorf("unknown cage command %q; see cage help", args[0]))
+		return fail(fmt.Errorf("无法识别命令 %q，请运行 cage help 查看用法。", args[0]))
 	}
 	return cli.Main(args, cli.Stdio())
 }
@@ -681,7 +679,7 @@ func containerInstallScript(kind string) (string, error) {
 		}
 		return script + agentvm.SetupScript, nil
 	default:
-		return "", fmt.Errorf("container-install-script tools|services")
+		return "", fmt.Errorf("用法：container-install-script tools|services")
 	}
 }
 
@@ -767,7 +765,7 @@ func relay(configPath, kind string) int {
 			diagnostics.Log("info", source, "process stopped on request")
 			return 0
 		}
-		diagnostics.Log("error", source, "process exited: "+err.Error())
+		diagnostics.Log("error", source, "进程已退出："+err.Error())
 		return 1
 	}
 	diagnostics.Log("info", source, "process exited normally")

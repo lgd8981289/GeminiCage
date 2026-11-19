@@ -2,7 +2,7 @@
 
 在 Mac 上开一台独立的虚拟机，里面运行 **Google Antigravity、Gemini 网页版和 Antigravity CLI**。你可以在同一个工作台中选网络出口、打开项目、编辑代码、使用终端，并在虚拟机自己的浏览器里登录 Google。
 
-**[下载 GeminiCage 2.0.3 · Mac 版（Apple 芯片）](https://github.com/lgd8981289/GeminiCage/releases/download/v2.0.3/GeminiCage-2.0.3-macos-arm64.dmg)**　·　[发行说明与 SHA-256 校验文件](https://github.com/lgd8981289/GeminiCage/releases/tag/v2.0.3)
+**[下载 GeminiCage 2.0.4 · Mac 版（Apple 芯片）](https://github.com/lgd8981289/GeminiCage/releases/download/v2.0.4/GeminiCage-2.0.4-macos-arm64.dmg)**　·　[发行说明与 SHA-256 校验文件](https://github.com/lgd8981289/GeminiCage/releases/tag/v2.0.4)
 
 | 开始前 | 你需要准备的东西 |
 | --- | --- |
@@ -20,7 +20,7 @@
 
 ```sh
 cd ~/Downloads
-shasum -a 256 GeminiCage-2.0.3-macos-arm64.dmg
+shasum -a 256 GeminiCage-2.0.4-macos-arm64.dmg
 ```
 
 **用微信扫一扫，关注公众号「程序员Sunday」**。我在公众号分享 AI 工具和编程实操。第一次安装客机需要一点时间，可以先把公众号和这份指南收藏起来，之后配置代理和项目时方便再找。手机上也可以打开微信「搜一搜」，输入 **程序员Sunday**。
@@ -63,6 +63,10 @@ shasum -a 256 GeminiCage-2.0.3-macos-arm64.dmg
 
 ## 常见问题
 
+**安装中断，在哪里看具体原因？**
+
+在「安装与检查」点「查看操作详情」。页面会显示最近执行的步骤，以及已识别故障的中文原因和处理办法。需要排查时可展开「查看原始日志」，或在「日志与诊断」导出记录。Google 登录页和 Antigravity 自身的提示语言由相应服务决定。
+
 **2.0.1 在「安装与检查」提示退出码 1，操作详情里有 `project path contains whitespace`，怎么办？**
 
 安装上方的最新版，退出旧版并重新打开 Gemini Cage，点「继续安装」。新版会沿用已准备的基础镜像和已有虚拟机标识，并使用不含空格的默认传输目录。旧传输目录 `~/Documents/Gemini Cage/Downloads` 中已有的文件仍可在 Finder 中找到。
@@ -79,12 +83,25 @@ Gemini Cage 的本机配置位于 `~/Library/GeminiCage`，使用独立的账户
 **哪些功能经过验证？**  
 已在独立的 Debian 13 客机中验证安装、网络检查、Antigravity 欢迎页到 Google 授权页，以及 CLI 在所选项目中启动。macOS 客机的 Google 安装介质已校验签名和版本，完整首次安装流程尚待实机验证。实体手机配对、外部 SSH 和 Tailscale 跨设备连接尚待端到端验证。Windows 工作台通过客机浏览器打开 Gemini；Google 多账号额度自动调度尚未实现。
 
+## 命令行与自动化
+
+安装到「应用程序」后，可用以下只读命令查看中文帮助、接口列表和当前环境状态。
+
+```sh
+cage="/Applications/Gemini Cage.app/Contents/Resources/cage"
+"$cage" help
+"$cage" agent capabilities
+"$cage" agent call status
+```
+
+`agent` 返回 JSON，供脚本判断结果。首次查询状态前，请先打开并解锁工作台。
+
 ## 从源码构建
 
 开发环境需要 Apple 芯片 Mac、Xcode Command Line Tools（含 Swift 编译器）、Git、Go 1.26.10 或更高、Node.js 22.20 或更高和 npm。构建脚本从上游 **Cage 0.1.8 macOS arm64** 软件包只读提取基础组件；可直接挂载上游磁盘映像。下面的命令适用于本次发布的版本。[上游 0.1.8 发行页](https://github.com/Lee-xeo/Claude-Cage/releases/tag/v0.1.8)
 
 ```sh
-git clone --branch v2.0.3 https://github.com/lgd8981289/GeminiCage.git
+git clone --branch v2.0.4 https://github.com/lgd8981289/GeminiCage.git
 cd GeminiCage
 
 # 单独运行这个子 shell。退出时会卸载构建用的上游映像。

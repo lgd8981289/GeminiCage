@@ -5,6 +5,7 @@ import { DiagnosticBoundary } from "./diagnostics.jsx";
 import { ClientRoot } from "./remote-hosts";
 import { native } from "./api";
 import "./style.css";
+import { FormValidation } from "./form-validation.jsx";
 import { IconHints } from "./icon-hints.jsx";
 
 const Workbench = lazy(() => import("./main.jsx"));
@@ -17,6 +18,7 @@ window.cageNativeAction = (command) => {
 };
 createRoot(document.getElementById("root")).render(
   <DiagnosticBoundary>
+    <FormValidation />
     <IconHints />
     <ClientRoot>
       <Suspense

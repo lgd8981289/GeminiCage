@@ -1,3 +1,4 @@
+import { OperationLog } from "./operation-log";
 import React, { useEffect, useRef, useState } from "react";
 import { Check, LoaderCircle } from "lucide-react";
 import { api, native, nativeAvailable } from "./api";
@@ -199,6 +200,6 @@ export function MacOSFirstSetup() {
     <p className="mac-setup-retention">系统授权完成后，还会确认共享工作区和网络隔离。全部检查通过后即可进入工作台。</p>
     <div className="initialization-support"><button className="text-button" onClick={() => setDetails(true)}>查看操作详情</button><button className="text-button" onClick={() => setDiagnostics(!diagnostics)}>日志与诊断</button></div>
     {diagnostics && <DiagnosticSettings />}
-    {details && <Modal title="系统设置操作详情" onClose={() => setDetails(false)}><div className="modal-body"><p>{progress}</p>{failure && <p role="alert">{failure}</p>}<pre className="job-log">{state?.job?.log || "当前步骤没有额外操作日志。可通过「日志与诊断」导出完整记录。"}</pre></div></Modal>}
+    {details && <Modal title="系统设置操作详情" onClose={() => setDetails(false)}><div className="modal-body"><p>{progress}</p>{failure && <p role="alert">{failure}</p>}<OperationLog job={state?.job} /></div></Modal>}
   </section></main>;
 }

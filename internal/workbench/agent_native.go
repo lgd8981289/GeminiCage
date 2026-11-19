@@ -37,7 +37,7 @@ func (s *Server) agentNative(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if r.Method == "POST" && id == "" {
 		if !s.hasTrustedView(r) {
-			http.Error(w, "Native submission requires the local launcher", 403)
+			http.Error(w, "请通过本机启动器提交请求。", 403)
 			return
 		}
 		var in struct {
@@ -49,17 +49,17 @@ func (s *Server) agentNative(w http.ResponseWriter, r *http.Request) {
 		}
 		var request map[string]json.RawMessage
 		if json.Unmarshal(in.Request, &request) != nil || request == nil || in.Connection == "" {
-			http.Error(w, "Native request and explicit connection_id required", 400)
+			http.Error(w, "本机操作需要提供请求内容和明确的 connection_id。", 400)
 			return
 		}
 		var action string
 		_ = json.Unmarshal(request["action"], &action)
 		if action == "" {
-			http.Error(w, "Native action required", 400)
+			http.Error(w, "此操作需要在本机应用中完成。", 400)
 			return
 		}
 		if s.remote != nil && s.remote.context().ConnectionID != in.Connection {
-			http.Error(w, "Connection changed", 409)
+			http.Error(w, "工作环境已切换，请在当前环境重新操作。", 409)
 			return
 		}
 		q.mu.Lock()
@@ -86,7 +86,7 @@ func (s *Server) agentNative(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if len(q.items) >= 32 {
-			http.Error(w, "Read or finish outstanding native requests before submitting more", 409)
+			http.Error(w, "请先读取或完成待处理的本机请求，再提交新请求。", 409)
 			return
 		}
 		item := &agentNativeItem{ID: randomToken()[:24], Request: append(json.RawMessage(nil), in.Request...), Connection: in.Connection, Status: "pending", created: now}
@@ -100,13 +100,13 @@ func (s *Server) agentNative(w http.ResponseWriter, r *http.Request) {
 	if (r.Method == "GET" && id == "") || r.Method == "POST" {
 		until, ok := q.windows[r.Header.Get("X-Cage-Agent-Window")]
 		if !ok || time.Now().After(until) {
-			http.Error(w, "Native window proof required", 403)
+			http.Error(w, "请从正在使用的本机窗口重新发起操作。", 403)
 			return
 		}
 	}
 	if r.Method == "GET" && id == "" {
 		if r.URL.Query().Get("consumer") != "window" {
-			http.Error(w, "Window consumer required", 400)
+			http.Error(w, "请先打开接收请求的桌面窗口。", 400)
 			return
 		}
 		for _, item := range q.items {
@@ -138,7 +138,7 @@ func (s *Server) agentNative(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				if item.Status != "running" {
-					http.Error(w, "Native request was not claimed", 409)
+					http.Error(w, "本机窗口尚未接收此请求。", 409)
 					return
 				}
 				var in struct {
@@ -159,14 +159,14 @@ func (s *Server) agentNative(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			if !s.hasTrustedView(r) {
-				http.Error(w, "Native results require the local launcher", 403)
+				http.Error(w, "请通过本机启动器提交操作结果。", 403)
 				return
 			}
 			jsonReply(w, item)
 			return
 		}
 	}
-	http.Error(w, "Native request unavailable; inspect state before repeating it", 410)
+	http.Error(w, "找不到本机请求，请先确认操作状态再重试。", 410)
 }
 
 func (s *Server) agentNativeWindow(w http.ResponseWriter, r *http.Request) {
@@ -177,7 +177,7 @@ func (s *Server) agentNativeWindow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !s.consumeTicket(in.Ticket) {
-		http.Error(w, "A fresh native launch ticket is required", 403)
+		http.Error(w, "启动凭据已失效，请从本机应用重新打开工作台。", 403)
 		return
 	}
 	q := &s.agentNativeQueue

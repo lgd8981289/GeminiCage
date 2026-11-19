@@ -81,17 +81,17 @@ func (p *maintenanceProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	expected := "Basic " + base64.StdEncoding.EncodeToString([]byte("cage-install:"+p.token))
 	if subtle.ConstantTimeCompare([]byte(r.Header.Get("Proxy-Authorization")), []byte(expected)) != 1 {
 		w.Header().Set("Proxy-Authenticate", `Basic realm="Cage maintenance"`)
-		http.Error(w, "Maintenance authentication required", 407)
+		http.Error(w, "更新组件前需要验证维护连接。", 407)
 		return
 	}
 	if r.Method == http.MethodConnect {
 		if !maintenanceDestination(r.Host, true) {
-			http.Error(w, "Not a Cage software source", 403)
+			http.Error(w, "该地址不属于已配置的软件源。", 403)
 			return
 		}
 		remote, err := p.dial(p.ctx, "tcp", r.Host)
 		if err != nil {
-			http.Error(w, "Software source proxy unavailable", 502)
+			http.Error(w, "软件源代理不可用，请检查当前节点。", 502)
 			return
 		}
 		if !p.track(remote) {
@@ -100,7 +100,7 @@ func (p *maintenanceProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer func() { remote.Close(); p.mu.Lock(); delete(p.connections, remote); p.mu.Unlock() }()
 		hijacker, ok := w.(http.Hijacker)
 		if !ok {
-			http.Error(w, "Tunnel unavailable", 500)
+			http.Error(w, "无法建立连接通道。", 500)
 			return
 		}
 		local, buffer, err := hijacker.Hijack()
@@ -126,7 +126,7 @@ func (p *maintenanceProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {
-		http.Error(w, "Read-only software source", 405)
+		http.Error(w, "软件源仅支持读取。", 405)
 		return
 	}
 	address := r.URL.Host
@@ -134,7 +134,7 @@ func (p *maintenanceProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		address = net.JoinHostPort(r.URL.Hostname(), "80")
 	}
 	if r.URL.Scheme != "http" || r.URL.User != nil || !maintenanceDestination(address, false) {
-		http.Error(w, "Not a Cage software source", 403)
+		http.Error(w, "该地址不属于已配置的软件源。", 403)
 		return
 	}
 	request := r.Clone(p.ctx)
@@ -144,7 +144,7 @@ func (p *maintenanceProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	request.Header.Del("Proxy-Connection")
 	response, err := p.transport.RoundTrip(request)
 	if err != nil {
-		http.Error(w, "Software source proxy unavailable", 502)
+		http.Error(w, "软件源代理不可用，请检查当前节点。", 502)
 		return
 	}
 	defer response.Body.Close()

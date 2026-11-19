@@ -20,16 +20,16 @@ async function requestAPI(path, { body, signal, keepalive } = {}) {
     });
   } catch (error) {
     if (signal?.aborted) throw error;
-    throw new Error(connectionErrorMessage(path), { cause: error });
+    throw new Error(connectionErrorMessage(path, body === undefined ? "GET" : "POST"), { cause: error });
   }
   if (!response.ok) {
     let message;
     if (response.status === 401) message = "连接授权已失效，请从 Cage 重新打开此页面。";
     else if (response.status === 423) message = "Cage 已锁定。请在电脑上解锁，再重新读取。";
     else if ((response.headers.get("Content-Type") || "").startsWith("text/plain")) {
-      message = (await response.text()).trim().slice(0, 1200);
+      message = httpErrorMessage(path, response.status, (await response.text()).slice(0, 1200), "text/plain", body === undefined ? "GET" : "POST");
     }
-    const error = new Error(message || httpErrorMessage(path, response.status));
+    const error = new Error(message || httpErrorMessage(path, response.status, "", "", body === undefined ? "GET" : "POST"));
     error.status = response.status;
     throw error;
   }

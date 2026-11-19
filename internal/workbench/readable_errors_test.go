@@ -78,3 +78,15 @@ func TestFileServiceRetainsKnownRejectionAndHidesUnknownBody(t *testing.T) {
 		t.Fatalf("unsafe unknown response: %v", unknown)
 	}
 }
+
+func TestInstallationFailureExplainsCauseWithoutCopyingProcessOutput(t *testing.T) {
+	for _, tc := range []struct{ output, want string }{
+		{"project path contains whitespace: /private/secret path", "共享目录路径含有空格"},
+		{"curl: (35) TLS handshake failed: private-host", "加密连接失败"},
+	} {
+		err := executionFailure("启动环境", errors.New("exit status 1"), tc.output)
+		if !strings.Contains(err.Error(), tc.want) || strings.Contains(err.Error(), "private") {
+			t.Fatalf("unexpected installation explanation: %v", err)
+		}
+	}
+}
