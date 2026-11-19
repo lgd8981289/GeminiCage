@@ -29,8 +29,11 @@ func CheckInstallDirectory(target, home string) error {
 	// <install>/CageData. Its installer preserves that directory on upgrade.
 	marker, _ := os.ReadFile(filepath.Join(actual, "Cage.install-id"))
 	for _, directory := range ownStorage {
-		if string(marker) == "local.sunday.gemini-cage" && sameStoragePath(directory, filepath.Join(actual, "CageData")) {
-			continue
+		if string(marker) == "local.sunday.gemini-cage" {
+			real, err := StoragePhysicalPath(directory)
+			if err == nil && sameStoragePath(real, filepath.Join(actual, "CageData")) {
+				continue
+			}
 		}
 		private = append(private, directory)
 	}
