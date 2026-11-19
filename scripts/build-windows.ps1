@@ -61,7 +61,15 @@ try {
         if ($signed) { throw '上游运行时仅用于手动安装的测试版。' }
         $kit = Join-Path $stage 'kit'
         if ((Get-FileHash -LiteralPath $UpstreamInstaller).Hash -ne '4b069b1e82e5d0ed0fd5a718222428679cf392b2b5f3e7e1a8efddc30634f0c4') { throw '上游 Windows 0.1.8 安装包校验失败。' }
-        Invoke-BuildTool $sevenZip @('x', '-y', '-bso0', "-o$kit", $UpstreamInstaller, 'resources/runtime/*', 'resources/mihomo.exe', 'resources/licenses/*')
+        # NSIS stages the payload in a runtime-selected directory. 7-Zip
+        # exposes that directory as a variable name, not a fixed archive root.
+        Invoke-BuildTool $sevenZip @('x', '-tNSIS', '-y', '-bso0', "-o$kit", $UpstreamInstaller)
+        $cores = @(Get-ChildItem -LiteralPath $kit -Recurse -File -Filter mihomo.exe | Where-Object {
+            (Test-Path -LiteralPath (Join-Path $_.DirectoryName 'runtime/qemu/qemu-system-x86_64.exe')) -and
+            (Test-Path -LiteralPath (Join-Path $_.DirectoryName 'runtime/MicrosoftEdgeWebView2RuntimeInstallerX64.exe'))
+        })
+        if ($cores.Count -ne 1) { throw '无法在校验过的上游安装包中定位唯一的运行时目录。' }
+        $kitResources = $cores[0].DirectoryName
     } else {
         & (Join-Path $PSScriptRoot 'build-qemu-windows.ps1') -DependencyCache $DependencyCache -OutputDirectory $qemuBuilt
     }
@@ -124,7 +132,6 @@ try {
     Get-ChildItem -LiteralPath $app -File | Where-Object { $_.Extension -in @('.pdb', '.xml') } | Remove-Item -Force
     Invoke-BuildTool $node @('scripts/bundle-cloud-kit.mjs', $resources)
     if ($UpstreamInstaller) {
-        $kitResources = Join-Path $kit 'resources'
         Copy-Item (Join-Path $kitResources 'runtime/*') (Join-Path $resources 'runtime') -Recurse
         Copy-Item (Join-Path $kitResources 'mihomo.exe') $resources
         Copy-Item (Join-Path $kitResources 'licenses') $resources -Recurse
