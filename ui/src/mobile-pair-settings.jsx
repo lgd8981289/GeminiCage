@@ -89,7 +89,7 @@ export function MobilePairSettings({ relay, savedRelay, onChange, onConfirm }) {
       <div className="section-title">
         <h3>远程连接</h3>
         <p>
-          手机配对后可以打开远程浏览器和客机桌面应用，也可以继续 Claude Code 会话、处理工具审批。
+          手机配对后可以打开远程浏览器和客机桌面应用，也可以管理兼容终端会话。要在手机上继续 Antigravity 对话，请在电脑的 Antigravity 终端输入 /remote-control。
         </p>
       </div>
       <section className="remote-pair-card" aria-label="手机配对">

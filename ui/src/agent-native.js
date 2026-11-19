@@ -9,7 +9,7 @@ export const agentClientPreferences = Object.freeze([
   { key: "cage-tab-layout", scoped: true, format: "JSON object", description: "按工作区保存的标签名称、固定与顺序" },
   { key: "cage-keyboard", scoped: true, remoteOnly: true, format: 'string "mac" | "native"', description: "远端环境在当前客户端的快捷键习惯；本机使用 settings.keyboard" },
   { key: "cage.audio", scoped: false, format: "JSON {muted:boolean, volume:number 0..1}", description: "当前客户端的声音偏好" },
-  { key: "cage-desktop-zoom", scoped: false, format: "string number: 0.75, 0.9, 1, 1.1, 1.25, 1.5", description: "Claude Desktop 显示比例" },
+  { key: "cage-desktop-zoom", scoped: false, format: "string number: 0.75, 0.9, 1, 1.1, 1.25, 1.5", description: "客机桌面显示比例" },
   { key: "cage-recent-environment", scoped: false, format: "string", description: "最近选择的 local 或主机 ID" },
 ]);
 

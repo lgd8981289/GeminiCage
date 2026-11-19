@@ -299,7 +299,7 @@ export function WorkspaceTabs({
           const opening = Boolean(openingSession) && openingSession === tab.cli_session_id;
           const runningElsewhere = tab.sessionRunningElsewhere;
           const runningNotice = tab.sessionClaudeDesktop
-            ? "Claude Desktop 占用中，请先在 Claude Desktop 中退出此会话再接续"
+            ? "桌面应用占用中，请先在该应用中退出此会话再接续"
             : "其他窗口占用中，退出原会话后可接续";
           const OwnerIcon = tab.sessionClaudeDesktop ? Monitor : TerminalSquare;
           const openError = tab.historySession && sessionOpenError?.id === tab.cli_session_id ? sessionOpenError.message : "";

@@ -121,7 +121,7 @@ func (s *Server) mobileOpenTerminal(w http.ResponseWriter, r *http.Request) {
 				jsonReply(w, view)
 				return
 			}
-			http.Error(w, "原会话仍在电脑终端运行，请先退出其中的 Claude Code，再接续同一段历史", 409)
+			http.Error(w, "原会话仍在电脑终端运行，请先退出其中的 兼容终端工具，再接续同一段历史", 409)
 			return
 		}
 	}

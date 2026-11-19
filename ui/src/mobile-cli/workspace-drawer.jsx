@@ -12,7 +12,7 @@ export const workspaceTools = [
 export function CodeNavigation({catalog, project, sessions, current, creating, onProject, onSession, onNew, onAction, formatTime}) {
   if (!catalog) return <p className="nav-note" role="status">正在读取项目…</p>;
   if (!project) return <p className="nav-note">请先在电脑 Cage 打开项目。</p>;
-  return <section className="code-navigation" aria-label="Claude Code 项目和会话">
+  return <section className="code-navigation" aria-label="兼容终端 项目和会话">
     <div className="project-field">
       <InlineSelect label="选择项目" icon={<FolderOpen size={16} />} value={project.path}
         disabled={creating} onChange={onProject} options={catalog.projects.map(p => ({
@@ -29,9 +29,9 @@ export function CodeNavigation({catalog, project, sessions, current, creating, o
 
 export function ProjectTree({catalog, projectPath, sessionID, expanded, toggle, creating, onNew, onSession, onAction}) {
   const projects = catalog?.projects || [];
-  return <section className="project-tree" aria-label="Claude Code 项目和会话">
-    <h2>Claude Code</h2>
-    {catalog?.shared_sessions === false && <p className="nav-note">当前启动配置使用独立移动会话。共享电脑终端需要使用 claude 启动命令。</p>}
+  return <section className="project-tree" aria-label="兼容终端 项目和会话">
+    <h2>兼容终端</h2>
+    {catalog?.shared_sessions === false && <p className="nav-note">当前启动配置使用独立移动会话。Antigravity 会话可通过 CLI 的 /remote-control 在手机上继续。</p>}
     {!catalog ? <p className="nav-note" role="status">正在读取项目…</p> :
       !projects.length ? <p className="nav-note">请在电脑 Cage 打开项目。</p> : projects.map((project, index) => {
         const path = project.path;

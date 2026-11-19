@@ -46,7 +46,7 @@ func mobileLaunchArgs(launcher string, account claudeSelection) ([]string, error
 	}
 	boundDefault := account.ID == "" && account.GuestID == "default"
 	if (!boundDefault && !validClaudeID(account.ID)) || !validClaudeGuestID(account.GuestID) || len(account.Subject) != 64 {
-		return nil, errors.New("Claude 账号身份无效")
+		return nil, errors.New("兼容终端账号身份无效")
 	}
 	return []string{"env", "CAGE_CLAUDE_SUBJECT=" + account.Subject, "/usr/local/bin/cage-claude-account", "run", account.GuestID}, nil
 }
@@ -126,7 +126,7 @@ func (s *Server) prepareMobileLaunch(record *mobileRecord) (claudeSelection, str
 		}
 		account := list.find(selection.ID)
 		if account == nil || !account.Enabled || account.Status != "ready" || account.guestID() != selection.GuestID || claudeIdentityHash(account.Email, account.Organization) != selection.Subject {
-			return selection, "", empty, errors.New("原会话的 Claude 账号已停用或发生变化")
+			return selection, "", empty, errors.New("原会话的 兼容终端账号已停用或发生变化")
 		}
 		if _, err = s.terminals.existingClaudeLogin(selection.ID, false); err != nil {
 			return selection, "", empty, err

@@ -34,7 +34,7 @@ import { MacOSLogin } from "./macos-login";
 import { MacOSAppWindow } from "./macos-claude-window";
 import { ProjectRecovery } from "./project-recovery";
 import { ClaudeDesktop } from "./claude-desktop";
-import { ClaudeAccountsPanel, useClaudeAccounts } from "./claude-accounts";
+import { GeminiAccountsPanel } from "./gemini-accounts";
 import { AccountProvider, AccountGate, useAccount } from "./account";
 import { BrowserHeader, BrowserTabRail, TerminalHeader, ExpandSidebar, ExpandPane } from "./pane-headers";
 import { useDownloadNotifications, useDesktopFiles } from "./browser-downloads";
@@ -71,7 +71,6 @@ function App() {
     window.addEventListener("cage-client-preferences", refresh);
     return () => window.removeEventListener("cage-client-preferences", refresh);
   }, []);
-  const claudeProfiles = useClaudeAccounts();
   const [managementPage, setManagementPage] = useState("");
   const [tailnetLogin, setTailnetLogin] = useState(null);
   const [desktopOpen, setDesktopOpen] = useState(false);
@@ -259,10 +258,6 @@ function App() {
     if (status?.ready && mixedBrowserId && mixedBrowserId !== browser.active)
       api("/browser/activate", { id: mixedBrowserId }).catch(error => setToast(error.message));
   }, [mixedBrowserId, status?.ready, browser.active]);
-  const finishedLogins = tabs.filter((tab) => tab.terminalKind === "claude-login" && tab.closed).map((tab) => tab.id).sort().join(",");
-  useEffect(() => {
-    if (finishedLogins) claudeProfiles.load();
-  }, [finishedLogins, claudeProfiles.load]);
   const audio = useAudioOutput(running && guestCapability(status, "audio") && !storageRecovery && !status?.environment_update_required && !connectionError);
   useEffect(() => {
     if (audio.error) setToast(audio.error);
@@ -486,10 +481,6 @@ function App() {
     });
     showTerminal(result);
     sessionsChanged();
-    if (kind === "claude" && result.claude_account_id &&
-        !claudeProfiles.accounts?.some((profile) => profile.id === result.claude_account_id)) {
-      claudeProfiles.load();
-    }
   };
   const showTerminal = result => {
     setTailnetLogin(null);
@@ -1193,13 +1184,8 @@ function App() {
       ...metadata[tab.id], title:tab.custom_title || tab.title, pinned:Boolean(tab.pinned),
     };
   }
-  const claudeLabels = new Map(claudeProfiles.accounts?.map((account) => [account.id, account.label || account.email]));
-  const claudeNumbers = new Map(claudeProfiles.accounts?.map((account, index) => [account.id, index + 1]));
-  const terminalAccountName = (tab) => claudeLabels.get(tab.claude_account_id) ||
-    (tab.terminalKind === "claude-login" ? "新账号登录" : tab.claude_account_id ? "Claude 账号" : "");
-  const displayTabs = orderedTabs(tabs, metadata).map((tab) =>
-    tab.claude_account_id || tab.terminalKind === "claude-login" ? { ...tab,
-      claudeLabel: terminalAccountName(tab), claudeAccountNumber: claudeNumbers.get(tab.claude_account_id) } : tab);
+  const terminalAccountName = tab => tab.account_label || (tab.claude_account_id ? "历史终端账号" : "");
+  const displayTabs = orderedTabs(tabs, metadata);
   const browserTabs = displayTabs.filter((tab) => tab.kind !== "terminal");
   const switchTabs =
     terminal && !showHome
@@ -1300,7 +1286,7 @@ function App() {
     const path = tab?.workspace || workspace;
     const account = tab?.claude_account_id && terminalAccountName(tab);
     const detail = tab?.terminalKind === "claude-login" ? `登录 · ${account || "新账号"}`
-      : account ? `Claude · ${account}${tab.claude_account_source === "default" ? "（启动时账号）" : ""}` : "";
+      : account ? `历史终端 · ${account}${tab.claude_account_source === "default" ? "（启动时账号）" : ""}` : "";
     const location = split && tab ? `heading-${tab.id}` : "heading";
     return <TerminalHeader tab={tab} project={projectName(path, groups)} metadata={metadata}
       contentWorkspace={path} terminalDetail={detail} terminalDetailHint={tab?.claude_account_source === "default"
@@ -1448,8 +1434,8 @@ function App() {
       >
         {!sidebarCollapsed && (
           <WorkspaceSidebar
-            onClaudeAccounts={() => setManagementPage("claude-accounts")}
-            claudeAccountsOpen={managementPage === "claude-accounts"}
+            onClaudeAccounts={() => setManagementPage("gemini-accounts")}
+            claudeAccountsOpen={managementPage === "gemini-accounts"}
             tailscaleOpen={managementPage === "tailscale"}
             updateAction={<AppUpdateButton updates={appUpdates} />}
             workspace={selectedProject || status.workspace}
@@ -1457,8 +1443,7 @@ function App() {
             projects={projects}
             projectGroups={groups}
             tabs={displayTabs}
-            sessions={cliSessions.sessions.map(session => ({ ...session,
-              claudeAccountNumber: claudeNumbers.get(session.account_id) }))}
+            sessions={cliSessions.sessions}
             sessionError={cliSessions.error}
             sessionRefreshing={cliSessions.loading}
             onSessionRefresh={cliSessions.refresh}
@@ -1500,7 +1485,6 @@ function App() {
               if (window.matchMedia("(max-width: 520px)").matches) setSidebarCollapsed(true);
             }}
             desktopOpen={!managementPage && desktopOpen}
-            onGoogleAccount={() => openBrowserPage("https://accounts.google.com/AccountChooser")}
             onClaudeWeb={() => openBrowserPage("https://gemini.google.com/")}
             onClaudeDesktop={() => { setManagementPage(""); setHome(false); setDesktopOpen(true); }}
             onEditor={openEditor}
@@ -1542,7 +1526,7 @@ function App() {
             <main className="management-page" aria-labelledby={managementPage + "-title"}>
               <header className="chrome management-header">
                 {sidebarButton()}
-                <h1 id={managementPage + "-title"} tabIndex={-1}>{managementPage === "tailscale" ? "Tailscale" : "Claude 账号管理"}</h1>
+                <h1 id={managementPage + "-title"} tabIndex={-1}>{managementPage === "tailscale" ? "Tailscale" : "Gemini 账号管理"}</h1>
               </header>
               <div className="management-content">
                 {managementPage === "tailscale" ? <TailscalePanel status={status}
@@ -1556,9 +1540,7 @@ function App() {
                     const nativeGuest = ["macos", "windows-11"].includes(status.guest_system);
                     if (nativeGuest && !await confirm({ title: "更新环境组件？", body: "更新会重新连接浏览器和显示组件，请先保存工作。设备身份、公钥和个人数据保留。", confirm: "更新组件" })) return;
                     await action(nativeGuest ? "/environment/update" : "/tailscale/install", {});
-                  }} /> : <ClaudeAccountsPanel store={claudeProfiles} tabs={tabs} onConfirm={confirm}
-                  running={status.vm_running} environmentBusy={busy || storageRecovery}
-                  login={(id) => createTerminal(workspace, "claude-login", id)} />}
+                  }} /> : <GeminiAccountsPanel ready={status.ready && browserAvailable && !busy} open={url => openBrowserPage(url, false)} />}
               </div>
             </main>
           )}
@@ -1683,7 +1665,7 @@ function App() {
                           ? "Cage 环境正在连接"
                           : "Cage 环境已就绪"
                         : setupProxy
-                          ? "为 Claude 准备独立工作区"
+                          ? "为 Gemini 准备独立工作区"
                           : "先启动 Cage 环境"}
                   </h1>
                   <p className="welcome-subtitle">
@@ -1818,13 +1800,13 @@ function App() {
                   {!running && !nativeGuestLabel && (
                     <p className="welcome-hint">
                       {setupProxy
-                        ? "Cage 不提供代理或 Claude 账户。连接后，在 Cage 内完成 Claude 登录。"
+                        ? "连接后，在客机中使用自己的 Google 账号登录 Gemini。"
                         : "首次安装时可在操作详情中查看下载和配置进度；中断后可以继续安装。"}
                     </p>
                   )}
                   {running && status.ready && (
                     <p className="welcome-hint">
-                      {status.guest_system === "windows-remote" ? "PowerShell 和浏览器无需 Claude 登录。只有使用 Claude 时才需要登录账户。" : <>打开项目后，在终端输入 <code>claude</code>，按提示登录你的账户。</>}
+                      {status.guest_system === "windows-remote" ? "可以在客机浏览器中使用 Google 账号登录 Gemini。" : <>打开项目后，新建「Antigravity 终端」，按提示使用 Google 账号登录。</>}
                       <br />
                       {status.guest_system === "windows-remote" ? "文件保存在云端隔离工作目录中，不会挂载你的本地文件夹。" : isRemoteClient() ? "打开的项目位于云端，编辑和删除会直接影响云端文件。" : "打开的项目与本机共享，编辑和删除文件会同步。"}
                     </p>

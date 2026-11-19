@@ -124,7 +124,7 @@ func (s *Server) loadClaudeAccounts() (claudeAccountList, error) {
 		return list, nil
 	}
 	if err != nil || json.Unmarshal(data, &list) != nil || list.Accounts == nil {
-		return list, errors.New("Claude 账号文件无法读取，请检查配置目录或恢复备份")
+		return list, errors.New("兼容终端账号文件无法读取，请检查配置目录或恢复备份")
 	}
 	list.Scheduling = list.Scheduling.defaults()
 	if !list.Scheduling.valid() {
@@ -138,7 +138,7 @@ func (s *Server) loadClaudeAccounts() (claudeAccountList, error) {
 			a.Source = "managed"
 		}
 		if !validClaudeID(a.ID) || ids[a.ID] || a.Source != "managed" && a.Source != "default" || a.Source == "default" && (a.Email == "" || a.ProfileID != "") || a.ProfileID != "" && !validClaudeID(a.ProfileID) || len(a.HandoffGroup) > 64 {
-			return list, errors.New("Claude 账号文件含无效或重复的记录，请从备份恢复")
+			return list, errors.New("兼容终端账号文件含无效或重复的记录，请从备份恢复")
 		}
 		ids[a.ID] = true
 		if a.Source == "managed" {
@@ -156,7 +156,7 @@ func (s *Server) loadClaudeAccounts() (claudeAccountList, error) {
 
 func (s *Server) saveClaudeAccounts(list claudeAccountList) error {
 	if err := writePrivate(filepath.Join(s.profile, "claude-accounts.json"), list); err != nil {
-		return errors.New("Claude 账号设置未保存，请检查配置目录权限和磁盘空间")
+		return errors.New("兼容终端账号设置未保存，请检查配置目录权限和磁盘空间")
 	}
 	return nil
 }
@@ -187,11 +187,11 @@ func validClaudeLabel(label string) bool {
 func (list *claudeAccountList) change(input claudeAccountInput) error {
 	label := strings.TrimSpace(input.Label)
 	if input.Action != "update" {
-		return errors.New("未知 Claude 账号操作")
+		return errors.New("未知 兼容终端账号操作")
 	}
 	a := list.find(input.ID)
 	if a == nil {
-		return errors.New("未找到 Claude 账号，请刷新面板")
+		return errors.New("未找到 兼容终端账号，请刷新面板")
 	}
 	if input.Label != "" {
 		if !validClaudeLabel(label) && (label == "" || label != a.Email) {
@@ -237,7 +237,7 @@ func validClaudeWindow(w *claudeWindow) bool {
 func (list claudeAccountList) observe(id string, observed claudeGuestSnapshot, now time.Time) error {
 	a := list.find(id)
 	if a == nil {
-		return errors.New("未找到 Claude 账号")
+		return errors.New("未找到 兼容终端账号")
 	}
 	a.CheckedAt = now.Unix()
 	email := observed.email()
@@ -332,7 +332,7 @@ type claudeSelection struct{ ID, GuestID, Subject string }
 func (s *Server) selectClaudeAccount(requestedID string, login bool, workspace string) (claudeSelection, error) {
 	var empty claudeSelection
 	if !login && requestedID != "" && requestedID != "auto" {
-		return empty, errors.New("Claude 终端会自动分配账号")
+		return empty, errors.New("兼容终端会自动分配账号")
 	}
 	m := &s.claudeAccounts
 	m.mu.Lock()
@@ -386,7 +386,7 @@ type claudeGuestQuota struct {
 func (s *Server) readClaudeGuestQuotas(ctx context.Context, ids []string) (map[string]claudeGuestQuota, error) {
 	for _, id := range ids {
 		if !validClaudeID(id) {
-			return nil, errors.New("Claude 账号 ID 无效")
+			return nil, errors.New("兼容终端账号 ID 无效")
 		}
 	}
 	// s.guest bounds its output to 64 KiB. Even a large pool uses one
@@ -493,7 +493,7 @@ func (s *Server) allocateClaudeAccount(previous claudeAccountList, workspace str
 	}
 	selected := pickClaudeAccount(list, active, logins, m.lastPick, preferred, now)
 	if selected == "" {
-		return empty, errors.New("暂无可分配的 Claude 账号。请在账号面板检查登录、参与状态和额度重置时间")
+		return empty, errors.New("暂无可分配的 兼容终端账号。请在账号面板检查登录、参与状态和额度重置时间")
 	}
 	a := list.find(selected)
 	return claudeSelection{ID: selected, GuestID: a.guestID(), Subject: claudeIdentityHash(a.Email, a.Organization)}, nil

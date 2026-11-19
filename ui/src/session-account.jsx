@@ -39,7 +39,7 @@ export function SessionAccount({ id, request, onChanged, compact = false }) {
   const switching=sw && sw.phase!=="completed";
   return <section className={`session-account ${compact?"session-account--compact":""}`} aria-label="会话账号">
     <button type="button" className="quiet-button" aria-expanded={open} onClick={()=>setOpen(v=>!v)}>
-      {session.account_label || "Claude 账号"} · {session.account_failure?"需要处理":switching?"正在交接":"会话绑定"}
+      {session.account_label || "历史终端账号"} · {session.account_failure?"需要处理":switching?"正在交接":"会话绑定"}
     </button>
     {open && <div className="session-account-options">
       <p>当前账号：{session.account_label || session.account_id}。会话重连会保持此账号。</p>

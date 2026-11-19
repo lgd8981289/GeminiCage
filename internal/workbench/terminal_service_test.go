@@ -199,7 +199,7 @@ func TestTerminalManagerStopAllowsLaterTerminals(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if second.title != "Claude 2" {
+	if second.title != "兼容终端 2" {
 		t.Fatalf("terminal numbering reset: %s", second.title)
 	}
 	manager.remove(second.id)

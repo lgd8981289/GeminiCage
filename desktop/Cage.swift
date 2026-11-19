@@ -194,7 +194,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         }
     }
     @objc private func about() {
-        let version = Bundle.main.object(forInfoDictionaryKey: "CageVersion") as? String ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "开发版本"
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? Bundle.main.object(forInfoDictionaryKey: "CageVersion") as? String ?? "开发版本"
         let status = controllerNeedsUpdate ? "\n当前连接旧后台；更新尚未完成。" : ""
         NSApp.orderFrontStandardAboutPanel(options: [.applicationName:"Gemini Cage", .applicationVersion:version, .credits:NSAttributedString(string:"本机隔离编码工作区\n基于 agent-vm、Lima、Chromium、noVNC 与 xterm.js" + status)])
     }
@@ -449,7 +449,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
             case "releases": path = "releases"
             default: replyHandler(nil,"未知的项目页面"); return
             }
-            let opened = NSWorkspace.shared.open(URL(string: "https://github.com/Lee-xeo/Claude-Cage/" + path)!)
+            let opened = NSWorkspace.shared.open(URL(string: "https://github.com/lgd8981289/GeminiCage/" + path)!)
             replyHandler(opened ? true : nil, opened ? nil : "无法打开项目页面，请检查默认浏览器")
         case "appUpdate":
             guard let operation = body["operation"] as? String, ["status", "check", "install", "cancel"].contains(operation) else { replyHandler(nil,"更新操作无效"); return }

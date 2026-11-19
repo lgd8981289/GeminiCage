@@ -75,7 +75,6 @@ export function WorkspaceSidebar({
   onClaudeAccounts,
   claudeAccountsOpen,
   onClaudeWeb,
-  onGoogleAccount,
   onClaudeDesktop,
   desktopOpen,
   onEditor,
@@ -146,11 +145,10 @@ export function WorkspaceSidebar({
         </div>
         <button className={`sidebar-link ${tailscaleOpen ? "selected" : ""}`} aria-current={tailscaleOpen ? "page" : undefined} onClick={onTailscale} aria-label="打开 Tailscale"><Network size={17} />Tailscale</button>
         {ssh && <button className="sidebar-link ssh-navigation" onClick={ssh.open} aria-label="SSH 主机"><Server size={17} />SSH</button>}
-        <button className={`sidebar-link ${desktopOpen ? "selected" : ""}`} onClick={onClaudeDesktop} disabled={!running || busy} title="安装或打开桌面应用"><Monitor size={17} />{guestSystem?.startsWith("windows") ? "Claude Desktop" : "Antigravity"}</button>
-        <button className="sidebar-link" onClick={onGoogleAccount} disabled={!ready || busy || !browserAvailable}><UsersRound size={17} />Google 账号</button>
+        <button className={`sidebar-link ${desktopOpen ? "selected" : ""}`} onClick={guestSystem?.startsWith("windows") ? onClaudeWeb : onClaudeDesktop} disabled={!running || busy || (guestSystem?.startsWith("windows") && (!ready || !browserAvailable))} title={guestSystem?.startsWith("windows") ? "在 Windows 客机中打开 Gemini" : "安装或打开桌面应用"} aria-label={guestSystem?.startsWith("windows") ? "在 Windows 客机中打开 Gemini" : "Antigravity"}><Monitor size={17} />{guestSystem?.startsWith("windows") ? "Gemini 网页版" : "Antigravity"}</button>
         <button className={`sidebar-link ${claudeAccountsOpen ? "selected" : ""}`} onClick={onClaudeAccounts}
           aria-current={claudeAccountsOpen ? "page" : undefined}>
-          <UsersRound size={17} />Claude 账号管理
+          <UsersRound size={17} />Gemini 账号管理
         </button>
       </nav>
       <div className="sidebar-scroll">

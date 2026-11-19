@@ -33,7 +33,7 @@ export function useDesktopZoom(automatic = false) {
   return [zoom, setZoom];
 }
 
-export function DesktopToolbar({ desktop, platform, title = "Claude Desktop", zoom, setZoom, onConfirm, onStop, busy, refresh, sidebarCollapsed, onExpand, children, automatic = false }) {
+export function DesktopToolbar({ desktop, platform, title = "Antigravity", checkTarget = "desktop", zoom, setZoom, onConfirm, onStop, busy, refresh, sidebarCollapsed, onExpand, children, automatic = false }) {
   const [hidden, setHidden] = useState(() => {
     try { return localStorage.getItem("cage-desktop-toolbar-hidden") === "true"; }
     catch { return false; }
@@ -69,7 +69,7 @@ export function DesktopToolbar({ desktop, platform, title = "Claude Desktop", zo
         </span>
         <span className="desktop-toolbar-spacer" />
         {children}
-        <DeviceCheckButton target="desktop" disabled={busy || !desktop?.running} />
+        <DeviceCheckButton target={checkTarget} disabled={busy || !desktop?.running} />
         {desktop?.running && (
           <label className="desktop-display-size">
             显示大小
@@ -208,7 +208,7 @@ export function ClaudeDesktop({
     else refresh();
   }, [status.job]);
   return (
-    <section className="claude-desktop-view" aria-label={automatic ? "Claude Desktop" : "Antigravity"}>
+    <section className="claude-desktop-view" aria-label={automatic ? "Windows 客机应用" : "Antigravity"}>
       {!nativeAvailable() && <BrowserUploads requests={uploads} onStatus={onStatus} />}
       {directoryRequest && <ProjectDialog
         key={directoryRequest.id}
@@ -224,7 +224,7 @@ export function ClaudeDesktop({
           await onProjectOpened(workspace);
         }}
       />}
-      <DesktopToolbar desktop={desktop} title={automatic ? "Claude Desktop" : "Antigravity"} platform={automatic ? "Windows" : "Linux"} zoom={zoom} setZoom={setZoom} automatic={automatic}
+      <DesktopToolbar desktop={desktop} title={automatic ? "Windows 客机应用" : "Antigravity"} platform={automatic ? "Windows" : "Linux"} zoom={zoom} setZoom={setZoom} automatic={automatic}
         onConfirm={onConfirm} onStop={() => run("stop")} busy={busy || !available} refresh={() => refresh()} sidebarCollapsed={sidebarCollapsed} onExpand={onExpand}>
         {desktop?.installed && !status.guest_system?.startsWith("windows") && <button className="quiet-button" disabled={busy} onClick={async () => {
           if (!desktop.running || await onConfirm({ title: "重新安装 Antigravity？", body: "请先保存应用内的工作。将关闭 Antigravity 并重新安装本版 Gemini Cage 校验过的 Google 发行包。", confirm: "重新安装" })) run("update");
@@ -252,8 +252,8 @@ export function ClaudeDesktop({
         {!available ? (
           <div className="desktop-empty">
             <Monitor size={36} />
-            <h2>Windows 云端暂不支持 Claude Desktop</h2>
-            <p>当前可使用隔离 PowerShell{guestCapability(status, "browser") && " 和浏览器"}，无需登录 Claude 账户。</p>
+            <h2>Windows 云端暂不支持 Windows 客机应用</h2>
+            <p>当前可使用隔离 PowerShell{guestCapability(status, "browser") && " 和浏览器"}，可在支持浏览器的环境中登录 Gemini。</p>
           </div>
         ) : desktop?.running && status.vm_running ? (
           <RemoteView
@@ -271,8 +271,8 @@ export function ClaudeDesktop({
             <Monitor size={36} />
             <h2>
               {desktop?.installed
-                ? (automatic ? "Claude Desktop" : "Antigravity")
-                : (automatic ? "在 Cage 中使用 Claude Desktop" : "在 Gemini Cage 中使用 Antigravity")}
+                ? (automatic ? "Windows 客机应用" : "Antigravity")
+                : (automatic ? "在 Cage 中使用 Windows 客机应用" : "在 Gemini Cage 中使用 Antigravity")}
             </h2>
             <p>
               在隔离环境中使用官方桌面应用。你可以在客机
@@ -295,7 +295,7 @@ export function ClaudeDesktop({
                   ) : (
                     <Download size={16} />
                   )}
-                  {desktop.installed ? (automatic ? "打开 Claude Desktop" : "打开 Antigravity") : (automatic ? "需在 Windows 客机内安装" : "下载并安装")}
+                  {desktop.installed ? (automatic ? "打开 Windows 客机应用" : "打开 Antigravity") : (automatic ? "需在 Windows 客机内安装" : "下载并安装")}
                 </button>
               )}
               {desktop?.installed && !status.guest_system?.startsWith("windows") && (
@@ -318,7 +318,7 @@ export function ClaudeDesktop({
               )}
             </div>
             {desktop?.installed && <p>{status.guest_system?.startsWith("windows")
-              ? "在 Claude Desktop 应用内检查并安装更新。"
+              ? "在 Windows 客机应用 应用内检查并安装更新。"
               : "此版本使用 Google 官方发行包。「修复安装」会重新验证并安装当前工作台支持的版本。"}</p>}
             <p className="desktop-note">
               关闭应用后释放图形会话资源，登录状态保留在 Cage

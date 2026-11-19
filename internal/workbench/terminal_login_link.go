@@ -36,7 +36,7 @@ func (s *Server) terminalLoginLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !claudeAuthorizationURL(input.URL) {
-		http.Error(w, "请选择 Claude 官方授权链接", 400)
+		http.Error(w, "请选择当前终端生成的官方授权链接", 400)
 		return
 	}
 	terminal := s.terminals.get(r.PathValue("id"))

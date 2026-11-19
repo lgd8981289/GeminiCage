@@ -128,7 +128,7 @@ export function useDesktopFiles(ready, onStatus, desktopVisible, windowVisible =
             } else {
               await native("uploadHostFiles", { ...body, selection: selection.fileSelection });
               await api("/input/files/finish", body);
-              status.current?.("所选文件已交给 Claude Desktop");
+              status.current?.("所选文件已交给客机桌面应用");
             }
           } catch (error) {
             assertConnection(connection);

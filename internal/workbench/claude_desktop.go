@@ -96,7 +96,7 @@ func (s *Server) claudeDesktopAction(w http.ResponseWriter, r *http.Request) {
 		defer s.desktopStatus.invalidate()
 		if s.windowsGuest != nil {
 			if action == "update" {
-				return errors.New("请使用 Windows 客机中 Claude Desktop 的更新入口")
+				return errors.New("请使用 Windows 客机中 桌面应用 的更新入口")
 			}
 			if action == "install" {
 				return errors.New("Windows 客机的自动安装尚未接通，请保留已有官方应用")

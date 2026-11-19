@@ -263,7 +263,7 @@ function App() {
         : <a className="icon-button" href="/" aria-label="返回工作台"><img className="brand-mark" src={cageLogo} alt="Cage" /></a>}
       {phoneWorkspace && (current.tool === "browser" || current.tool === "claude") && <div className="workspace-address-slot" ref={setAddressSlot} />}
       <div className="top-actions">{phoneWorkspace
-        ? <span className="workspace-tool-icon" role="img" aria-label={activeTool?.name || "Claude Code"}><ActiveToolIcon size={19} aria-hidden="true" /></span>
+        ? <span className="workspace-tool-icon" role="img" aria-label={activeTool?.name || "项目终端"}><ActiveToolIcon size={19} aria-hidden="true" /></span>
         : <div className="connection-host"><Monitor size={16} /><span>{catalog?.host || "连接电脑"}</span></div>}</div>
     </header>
     {gate ? <Notice onRetry={refreshAll}>{gate}</Notice> : !catalog
@@ -510,19 +510,19 @@ function Chat({ id, drafts, ready, visible, refresh, onOpenWeb, onDenied, onMiss
   };
   return <>
     <section className="chat-header">
-      <div className="title-line">{onBack && <button type="button" className="icon-button" aria-label="返回会话列表" onClick={onBack}><ArrowLeft size={18} /></button>}<h1>{session?.title || "Claude Code 会话"}</h1>{session && <Status value={last?.status} awaitingApproval={last?.status === "running" && last.approval} />}</div>
+      <div className="title-line">{onBack && <button type="button" className="icon-button" aria-label="返回会话列表" onClick={onBack}><ArrowLeft size={18} /></button>}<h1>{session?.title || "项目终端 会话"}</h1>{session && <Status value={last?.status} awaitingApproval={last?.status === "running" && last.approval} />}</div>
       {session && <p className="note">{session.workspace}</p>}
     </section>
     {!uncertain && (readError || connectionError) && <Notice onRetry={retry} label="再次连接">{readError || connectionError}</Notice>}
     {session && <SessionAccount id={id} request={request} onChanged={()=>setReload(n=>n+1)} compact />}
     {(sendProgress || connectionProgress || readProgress) && <p className="note" role="status">{sendProgress || connectionProgress || readProgress}</p>}
     {session?.connection_notice && <Notice>{session.connection_notice}</Notice>}
-    {session?.history_truncated && <p className="note">手机显示的历史已截断，完整内容保存在电脑 Claude Code 中。</p>}
+    {session?.history_truncated && <p className="note">手机显示的历史已截断，完整内容保存在电脑 项目终端 中。</p>}
     <section className="transcript" ref={transcript} aria-label="会话消息" onScroll={(e) => {
       const box = e.currentTarget; follow.current = box.scrollHeight - box.scrollTop - box.clientHeight < 64;
     }}>
       {!session && !readError && <Empty icon={LoaderCircle} title="正在读取会话…" />}
-      {session && !session.turns?.length && <Empty icon={Terminal} title="发送第一条消息">Claude Code 会在所选项目中处理你的请求。</Empty>}
+      {session && !session.turns?.length && <Empty icon={Terminal} title="发送第一条消息">项目终端 会在所选项目中处理你的请求。</Empty>}
       <TranscriptContext.Provider value={transcriptContext}>{session?.turns?.map((turn) => <React.Fragment key={turn.id}>
         <article className="message user" aria-label="你的消息"><MessageBody text={turn.prompt} /></article>
         <article className="message" aria-label="回复">
@@ -544,7 +544,7 @@ function Chat({ id, drafts, ready, visible, refresh, onOpenWeb, onDenied, onMiss
       {session?.single_turn && <p className="note">当前凭据或路由只能验证本轮。请返回会话列表，新建会话后继续。</p>}
       {!ready && <p className="note">请在电脑上启动 Cage 环境。</p>}
       <div className="composer-field">
-        <textarea ref={composerInput} aria-label="消息" rows="1" placeholder="给 Claude Code 发消息" value={draft} disabled={!session || session.single_turn || !ready || uncertain || busy}
+        <textarea ref={composerInput} aria-label="消息" rows="1" placeholder="给 项目终端 发消息" value={draft} disabled={!session || session.single_turn || !ready || uncertain || busy}
           onChange={(e) => {
             const value = e.target.value;
             if (value) drafts.set(id, {text:value}); else drafts.delete(id);
@@ -571,7 +571,7 @@ function Approval({ approval, busy, feedback, onDecide }) {
     <h2>允许使用 {approval.tool}？</h2>
     {input === null ? <p className="note">无法显示完整参数，请拒绝或重新读取。</p>
       : <pre tabIndex={0} aria-label={approval.preview ? "工具参数预览" : "完整工具参数"}>{input}</pre>}
-    {approval.preview && <p className="note">参数预览由 Claude Code 提供。若显示省略内容，请在电脑查看完整参数后处理。</p>}
+    {approval.preview && <p className="note">参数预览由 项目终端 提供。若显示省略内容，请在电脑查看完整参数后处理。</p>}
     {feedback && <p className="note" role="status">{feedback.message}</p>}
     <div className="approval-actions">
       <button type="button" className="action secondary" disabled={busy || feedback?.checking} onClick={() => onDecide(false)}>拒绝</button>

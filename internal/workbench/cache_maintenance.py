@@ -267,14 +267,14 @@ class Maintenance:
         self.protected += [("全局账户配置", home / ".claude.json")]
         for name, root in (("browser", browser), ("desktop", desktop)):
             for index, leaf in enumerate(("Cache", "Code Cache", "GPUCache")):
-                self.targets[name + "-" + str(index)] = (root / leaf, name, ("浏览器" if name == "browser" else "Claude Desktop") + " · " + leaf)
+                self.targets[name + "-" + str(index)] = (root / leaf, name, ("浏览器" if name == "browser" else "桌面应用") + " · " + leaf)
             for leaf in ("Cookies", "Network", "Local Storage", "IndexedDB", "Sessions", "Session Storage"):
                 self.protected.append(("网站登录与会话存储", root / leaf))
         safe(home)
         self.scope = digest([system, str(home), str(accounts), home.stat().st_dev, home.stat().st_ino])
 
     def add_config(self, account, root, label):
-        self.targets["cli-" + account] = (root / "cache", "cli", "Claude Code · " + label + "缓存")
+        self.targets["cli-" + account] = (root / "cache", "cli", "兼容终端 · " + label + "缓存")
         for leaf in (".credentials.json", "settings.json", "projects", "history.jsonl", "skills", "plugins"):
             self.protected.append(("账户、会话与自定义设置", root / leaf))
 

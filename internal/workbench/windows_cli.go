@@ -110,27 +110,27 @@ func (s *Server) windowsCLIRequest(ctx context.Context, request map[string]any, 
 	raw := json.RawMessage(result.Bytes())
 	var wrapper map[string]json.RawMessage
 	if json.Unmarshal(raw, &wrapper) != nil {
-		return errors.New("Windows Claude Code 响应无效")
+		return errors.New("Windows 兼容终端工具 响应无效")
 	}
 	if wrapper["error"] != nil {
 		var reason string
 		if json.Unmarshal(wrapper["error"], &reason) == nil && reason == "requires_gui_login" {
 			return errors.New("Windows 桌面尚未登录或已锁定，请登录并解锁 Windows 桌面后重试")
 		}
-		return errors.New("Windows Claude Code 操作未能完成，原账号与聊天记录已保留")
+		return errors.New("Windows 兼容终端工具 操作未能完成，原账号与聊天记录已保留")
 	}
 	if value, ok := wrapper["result"]; ok {
 		raw = value
 	}
 	if json.Unmarshal(raw, output) != nil {
-		return errors.New("Windows Claude Code 响应无效")
+		return errors.New("Windows 兼容终端工具 响应无效")
 	}
 	return nil
 }
 func (s *Server) readWindowsClaudeAccount(ctx context.Context, mode, id, subject string) (claudeGuestSnapshot, error) {
 	var result claudeGuestSnapshot
 	if !validClaudeGuestID(id) {
-		return result, errors.New("Claude 账号 ID 无效")
+		return result, errors.New("兼容终端账号 ID 无效")
 	}
 	err := s.windowsCLIRequest(ctx, map[string]any{"action": "account", "mode": mode, "account": id, "subject": subject}, &result)
 	return result, err
@@ -166,7 +166,7 @@ func (s *Server) createWindowsCLITerminal(input terminalRequest) (*terminalSessi
 		return nil, errors.New("终端类型无效")
 	}
 	if kind == "shell" && (input.ClaudeAccountID != "" || input.sharedID != "") {
-		return nil, errors.New("普通终端不能指定 Claude 账号或会话")
+		return nil, errors.New("普通终端不能指定 兼容终端账号或会话")
 	}
 	s.mu.Lock()
 	ready, closing, command := s.ready, s.closing, claudeTerminalCommand(s.preferences)
@@ -242,7 +242,7 @@ func (s *Server) createWindowsCLITerminal(input terminalRequest) (*terminalSessi
 		}
 		if selection.ID != "" {
 			if !validClaudeID(selection.ID) || !validClaudeGuestID(selection.GuestID) || login && selection.GuestID == "default" {
-				return nil, errors.New("Claude 账号 ID 无效")
+				return nil, errors.New("兼容终端账号 ID 无效")
 			}
 			if login && s.mobileCLI.activeAccounts()[selection.ID] > 0 {
 				return nil, errors.New("请先结束该账号正在执行的移动 CLI 轮次，再重新登录")
@@ -251,7 +251,7 @@ func (s *Server) createWindowsCLITerminal(input terminalRequest) (*terminalSessi
 				return existing, conflict
 			}
 			if !login && selection.Subject == "" {
-				return nil, errors.New("Claude 账号状态已变化，请重试")
+				return nil, errors.New("兼容终端账号状态已变化，请重试")
 			}
 			if login {
 				finished = func() {

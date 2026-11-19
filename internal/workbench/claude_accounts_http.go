@@ -107,7 +107,7 @@ func (s *Server) mutateClaudeAccounts(w http.ResponseWriter, r *http.Request) {
 		}
 		m.mu.Unlock()
 	default:
-		err = errors.New("未知 Claude 账号操作")
+		err = errors.New("未知 兼容终端账号操作")
 	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusConflict)
@@ -303,7 +303,7 @@ func (s *Server) refreshClaude(ctx context.Context, id string, finished bool) er
 		}
 	}
 	if err == nil && list.find(id) == nil && (id == "" || list.PendingLogin != id) {
-		err = errors.New("未找到 Claude 账号")
+		err = errors.New("未找到 兼容终端账号")
 	}
 	if err != nil {
 		m.mu.Unlock()
@@ -338,7 +338,7 @@ func (s *Server) runClaudeRefresh(parent context.Context, id, guestID string, ca
 		return
 	}
 	if probeErr != nil {
-		err = errors.New("无法读取账号状态，请确认环境已启动并检查 Claude Code")
+		err = errors.New("无法读取账号状态，请确认环境已启动并检查 兼容终端工具")
 		return
 	}
 	m.mu.Lock()
@@ -385,7 +385,7 @@ func (s *Server) runClaudeRefresh(parent context.Context, id, guestID string, ca
 				} else {
 					list.Accounts = append(list.Accounts, claudeAccount{ID: id, Source: "managed", Label: reading.email(), Enabled: true})
 					err = list.observe(id, reading, time.Now())
-					notice = "已将登录成功的 Claude 账号加入自动分配"
+					notice = "已将登录成功的 兼容终端账号加入自动分配"
 				}
 				list.PendingLogin = ""
 			case finished:

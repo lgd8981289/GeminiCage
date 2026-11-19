@@ -116,7 +116,7 @@ func (s *Server) nativeMaintenancePreflight() error {
 		return nil
 	}
 	if s.terminals.hasLive() || len(s.mobileCLI.activeAccounts()) != 0 {
-		return errors.New("请先保存工作，结束正在运行的终端和 Claude Code 轮次，再重试更新。更新会重启客机连接组件；聊天历史、项目和登录资料会保留。")
+		return errors.New("请先保存工作，结束正在运行的终端和 兼容终端工具 轮次，再重试更新。更新会重启客机连接组件；聊天历史、项目和登录资料会保留。")
 	}
 	if !s.vmRunning() {
 		return errors.New("请先启动并登录客机，再更新环境组件。")

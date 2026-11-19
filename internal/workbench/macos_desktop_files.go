@@ -22,7 +22,7 @@ func macOSFileFailure(reason string) error {
 	case "accessibility_permission":
 		return errors.New("请在虚拟 Mac 中允许 Cage Guest Window 使用辅助功能，再重新传递文件")
 	case "window_changed", "file_dialog_changed", "gui_session_changed", "attachment_cancelled":
-		return errors.New("接收文件的 Claude 窗口已变化，请回到原窗口重新选择文件")
+		return errors.New("接收文件的 应用窗口已变化，请回到原窗口重新选择文件")
 	case "file_dialog_navigation_failed", "file_dialog_still_open", "file_dialog_selection_mismatch":
 		return errors.New("客机文件选择框尚未接收文件，请检查该选择框后重试")
 	case "attachment_incomplete":
@@ -30,7 +30,7 @@ func macOSFileFailure(reason string) error {
 	case "attachment_limit":
 		return errors.New("一次最多传递 100 个附件，请分批选择文件")
 	default:
-		return errors.New("虚拟 Mac 未能接收附件，请确认 Claude Desktop 已打开，且客机组件已更新")
+		return errors.New("虚拟 Mac 未能接收附件，请确认 桌面应用 已打开，且客机组件已更新")
 	}
 }
 
@@ -149,7 +149,7 @@ func (s *Server) macOSPasteDesktopImage(ctx context.Context, data []byte, window
 	var reply bytes.Buffer
 	cmd.Stdout = &boundedWindowsStatusWriter{buffer: &reply, remaining: 65536}
 	if cmd.Run() != nil {
-		return nil, errors.New("图片未能传入虚拟 Mac，请确认 Claude Desktop 已打开")
+		return nil, errors.New("图片未能传入虚拟 Mac，请确认 桌面应用 已打开")
 	}
 	var result map[string]any
 	if json.Unmarshal(reply.Bytes(), &result) != nil {

@@ -289,7 +289,7 @@ export function MacOSAppWindow({ browser = false, onOpenPage, visible, keyboard 
   if (!visible) return null;
   return <section className="claude-desktop-view mac-claude" aria-label={"虚拟 Mac 中的 " + appName}>
     {(browser || !nativeAvailable()) && <BrowserUploads requests={uploads} onStatus={onStatus} />}
-    <DesktopToolbar title={appName} desktop={state} platform="macOS" zoom={zoom} setZoom={setZoom} onConfirm={onConfirm}
+    <DesktopToolbar title={appName} checkTarget={browser ? "browser" : "desktop"} desktop={state} platform="macOS" zoom={zoom} setZoom={setZoom} onConfirm={onConfirm}
       onStop={browser ? undefined : () => action("stop")} refresh={() => refresh(n => n+1)} sidebarCollapsed={sidebarCollapsed} onExpand={onExpand}>
       {browser && <BrowserFavorites ready={Boolean(state?.installed)} onOpen={onOpenPage} />}
       <MacOSLogin />

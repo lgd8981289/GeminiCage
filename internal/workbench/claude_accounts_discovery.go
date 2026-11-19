@@ -89,7 +89,7 @@ func (s *Server) inspectClaudeDefault(parent context.Context, force bool) (claud
 	defer m.mu.Unlock()
 	if ctx.Err() != nil || epoch.Err() != nil || err != nil {
 		reading = empty
-		err = errors.New("暂时无法读取环境的默认登录，请确认 Claude Code 和环境组件可用后重试")
+		err = errors.New("暂时无法读取环境的默认登录，请确认 兼容终端工具 和环境组件可用后重试")
 	} else {
 		list, loadErr := s.loadClaudeAccounts()
 		if loadErr != nil {

@@ -469,7 +469,7 @@ function RecoveryKeyScreen() {
         }}>下载密钥文件</button>
       </div>
       {notice && <p className="field-help" role="status">{notice}</p>}
-      <p className="field-help">完整密钥仅在此处显示。关闭或刷新后，可验证账户密码重新生成；重新生成后旧密钥失效。{recovery.reset && "原来的资料和 Claude 登录状态已保留，Cage 的记住我和快捷解锁已关闭，请用新密码登录后重新设置。"}</p>
+      <p className="field-help">完整密钥仅在此处显示。关闭或刷新后，可验证账户密码重新生成；重新生成后旧密钥失效。{recovery.reset && "原来的资料和 客机应用登录状态已保留，Cage 的记住我和快捷解锁已关闭，请用新密码登录后重新设置。"}</p>
       <label className="account-device-option check-line"><input type="checkbox" checked={saved} onChange={(event) => setSaved(event.target.checked)} /><span>我已安全保存完整恢复密钥</span></label>
       <button className="primary account-submit" disabled={!saved} onClick={dismissRecovery}>{recovery.reset ? "返回登录" : "继续使用 Cage"}</button>
     </section>
@@ -486,7 +486,7 @@ function AccountRecovery({ onBack, onReset }) {
   return <main className="account-gate">
     <section className="account-entry account-recovery" aria-label="恢复账户">
       <h1>使用恢复密钥重置密码</h1>
-      <p className="account-entry-intro">为 {account.username} 设置新密码，原来的资料和 Claude 登录状态会保留。</p>
+      <p className="account-entry-intro">为 {account.username} 设置新密码，原来的资料和 客机应用登录状态会保留。</p>
       {account.recovery_ready ? <form onSubmit={async (event) => {
         event.preventDefault();
         if (busy) return;
@@ -803,7 +803,7 @@ export function AccountSettings({ busy: environmentBusy, onDirty }) {
         <fieldset disabled={busy || environmentBusy}>
           <h4>账户密码</h4>
           <p className="field-help">
-            修改密码不会清除 Claude 的登录状态。{account.macos_credentials_ready ? "Cage 与 macOS 客机共用密码；客机关闭时会在下次启动后同步。" : "忘记密码时，可在登录页使用已保存的恢复密钥重置。"}
+            修改密码不会清除 客机应用的登录状态。{account.macos_credentials_ready ? "Cage 与 macOS 客机共用密码；客机关闭时会在下次启动后同步。" : "忘记密码时，可在登录页使用已保存的恢复密钥重置。"}
           </p>
           {!account.trusted_local && <PasswordField
             label="当前密码"

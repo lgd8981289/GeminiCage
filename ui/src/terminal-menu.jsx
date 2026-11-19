@@ -1,6 +1,5 @@
 import React, { useLayoutEffect, useRef } from "react";
 import { Sparkles, TerminalSquare } from "lucide-react";
-import { AgentIcon } from "./agent-icon";
 
 export function TerminalMenu({ choice, busy, antigravity = true, onClose, onSelect }) {
   const menu = useRef(null);
@@ -58,9 +57,6 @@ export function TerminalMenu({ choice, busy, antigravity = true, onClose, onSele
       {antigravity && <button role="menuitem" disabled={busy} onClick={() => onSelect("antigravity")}>
         <Sparkles size={16} />Antigravity 终端
       </button>}
-      <button role="menuitem" disabled={busy} onClick={() => onSelect("claude")}>
-        <AgentIcon />Claude 终端
-      </button>
     </div>
   );
 }

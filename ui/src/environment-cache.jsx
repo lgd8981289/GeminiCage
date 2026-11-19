@@ -98,6 +98,6 @@ export function EnvironmentCache({ status, onConfirm }) {
         </div>)}
       </div>
     </>}
-    <p className="field-help">盘点、保护资料与可恢复清理的流程参考了 claude-post-ban-cleanup 和 Claude-Guardian，由 Cage 独立实现。</p>
+    <p className="field-help">清理前可以预览受影响的文件，并查看可恢复的项目。</p>
   </section>;
 }

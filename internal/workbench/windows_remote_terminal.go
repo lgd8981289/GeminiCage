@@ -16,7 +16,7 @@ func (s *Server) createRemoteWindowsTerminal(input terminalRequest) (*terminalSe
 		return s.createWindowsCLITerminal(input)
 	}
 	if input.Kind != "" && input.Kind != "shell" || input.ClaudeAccountID != "" || input.sharedID != "" {
-		return nil, errors.New("普通 PowerShell 终端不能指定 Claude 账号、会话或其他终端类型")
+		return nil, errors.New("普通 PowerShell 终端不能指定 兼容终端账号、会话或其他终端类型")
 	}
 	s.mu.Lock()
 	ready, closing := s.ready, s.closing

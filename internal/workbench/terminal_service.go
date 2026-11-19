@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"strings"
 	"sync"
 	"time"
 
@@ -57,11 +58,11 @@ func (m *terminalManager) startSessionWithPTY(cmd *exec.Cmd, workspace, kind str
 	m.sequence++
 	title := fmt.Sprintf("终端 %d", m.sequence)
 	if kind == "claude" {
-		title = fmt.Sprintf("Claude %d", m.sequence)
+		title = fmt.Sprintf("兼容终端 %d", m.sequence)
 	} else if kind == "antigravity" {
 		title = fmt.Sprintf("Antigravity %d", m.sequence)
 	} else if kind == "claude-login" {
-		title = "Claude 账号登录"
+		title = "兼容终端账号登录"
 	}
 	session := newTerminalSession(file)
 	session.id, session.title, session.workspace, session.cmd = randomToken()[:16], title, workspace, cmd
@@ -258,6 +259,7 @@ func (s *Server) createTerminalLocked(input terminalRequest) (*terminalSession, 
 	closing := s.closing
 	componentUpdate := s.guestUpdateRequired
 	command := claudeTerminalCommand(s.preferences)
+	agyArgs := strings.Fields(s.preferences.AntigravityTerminalArgs)
 	s.mu.Unlock()
 	if closing {
 		return nil, errTerminalsClosed
@@ -267,7 +269,7 @@ func (s *Server) createTerminalLocked(input terminalRequest) (*terminalSession, 
 	}
 	if s.macosGuest != nil {
 		if input.Kind == "claude" && !sharedCLILauncher(command) {
-			return nil, errors.New("macOS 客机支持 claude 或 ccs 配置名启动命令")
+			return nil, errors.New("此历史会话需要使用原先的兼容启动命令")
 		}
 		s.mu.Lock()
 		ready := s.ready
@@ -291,7 +293,7 @@ func (s *Server) createTerminalLocked(input terminalRequest) (*terminalSession, 
 	}
 	managed := input.Kind == "claude" || input.Kind == "claude-login"
 	if !managed && input.ClaudeAccountID != "" {
-		return nil, errors.New("普通终端不能指定 Claude 账号")
+		return nil, errors.New("普通终端不能指定 兼容终端账号")
 	}
 	// Login works even when the last project is disconnected or has moved.
 	// It always runs from the guest home, without loading project settings.
@@ -329,7 +331,7 @@ func (s *Server) createTerminalLocked(input terminalRequest) (*terminalSession, 
 		if s.macosGuest != nil {
 			project = macOSProjectPath(s.macosGuest.User, workspace)
 		}
-		script = antigravityTerminalScript(project)
+		script = antigravityTerminalScript(project, agyArgs...)
 	}
 	var selection claudeSelection
 	var finished func()
@@ -348,7 +350,7 @@ func (s *Server) createTerminalLocked(input terminalRequest) (*terminalSession, 
 				return nil, errGuestUpdateRequired
 			}
 			if !validClaudeID(selection.ID) || !validClaudeGuestID(selection.GuestID) || (login && selection.GuestID == "default") {
-				return nil, errors.New("Claude 账号 ID 无效")
+				return nil, errors.New("兼容终端账号 ID 无效")
 			}
 			if login && s.mobileCLI.activeAccounts()[selection.ID] > 0 {
 				return nil, errors.New("请先结束该账号正在执行的移动 CLI 轮次，再重新登录")
@@ -357,7 +359,7 @@ func (s *Server) createTerminalLocked(input terminalRequest) (*terminalSession, 
 				return existing, conflict
 			}
 			if !login && selection.Subject == "" {
-				return nil, errors.New("Claude 账号状态已变化，请重试")
+				return nil, errors.New("兼容终端账号状态已变化，请重试")
 			}
 			script = managedClaudeTerminalScript(s.cliWorkspace(workspace), launchCommand, selection.GuestID, selection.Subject, login)
 			if login {
@@ -442,7 +444,7 @@ func (s *Server) readClaudeGuestSnapshot(ctx context.Context, id string) (claude
 
 func (s *Server) readClaudeGuestUsage(ctx context.Context, id, subject string) (claudeGuestSnapshot, error) {
 	if _, err := hex.DecodeString(subject); err != nil || len(subject) != 64 {
-		return claudeGuestSnapshot{}, errors.New("Claude 账号身份无效")
+		return claudeGuestSnapshot{}, errors.New("兼容终端账号身份无效")
 	}
 	if s.windowsGuest != nil {
 		return s.readWindowsClaudeAccount(ctx, "usage", id, subject)
@@ -453,7 +455,7 @@ func (s *Server) readClaudeGuestUsage(ctx context.Context, id, subject string) (
 func (s *Server) readClaudeGuestReport(ctx context.Context, id, command string) (claudeGuestSnapshot, error) {
 	var snapshot claudeGuestSnapshot
 	if !validClaudeGuestID(id) {
-		return snapshot, errors.New("Claude 账号 ID 无效")
+		return snapshot, errors.New("兼容终端账号 ID 无效")
 	}
 	data, err := s.guest(ctx, command)
 	if err != nil || json.Unmarshal(data, &snapshot) != nil {
@@ -504,8 +506,8 @@ func managedClaudeTerminalScript(workspace, command, accountID, subject string, 
 // The saved command is interpreted only by the guest's interactive shell.
 // Reconnecting a viewer never executes it again; exiting Claude leaves a shell.
 // The CLI performs its own OAuth in the guest, using Google's package verifier.
-func antigravityTerminalScript(project string) string {
-	return "set -e\ncd -- " + shellescape.Quote(project) + `
+func antigravityTerminalScript(project string, args ...string) string {
+	script := "set -e\ncd -- " + shellescape.Quote(project) + `
 if [ ! -x "$HOME/.local/bin/agy" ]; then
     installer=$(mktemp)
     trap 'rm -f "$installer"' EXIT
@@ -515,6 +517,10 @@ if [ ! -x "$HOME/.local/bin/agy" ]; then
     trap - EXIT
 fi
 exec env TERM=xterm-256color COLORTERM=truecolor "$HOME/.local/bin/agy"`
+	for _, arg := range args {
+		script += " " + shellescape.Quote(arg)
+	}
+	return script
 }
 
 func terminalScript(workspace, kind, command string) string {

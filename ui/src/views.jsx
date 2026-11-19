@@ -622,7 +622,7 @@ export function TerminalView({ session, visible, focused = true, onStatus, onCon
       <div className={`terminal-host ${preparing ? "terminal-preparing" : ""}`} ref={box} aria-hidden={preparing || undefined} />
       {preparing && (
         <div className="terminal-startup" role="status">
-          <span>正在准备 Claude 会话…</span>
+          <span>正在准备终端会话…</span>
           <button onClick={() => revealStartup.current?.()}>显示启动过程</button>
         </div>
       )}

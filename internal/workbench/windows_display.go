@@ -49,7 +49,7 @@ type windowsWindowPane struct {
 type windowsWindowFailure struct{ code string }
 
 func (e windowsWindowFailure) Error() string {
-	return "Windows 应用操作未完成，请确认客机已解锁且 Claude 窗口仍在运行"
+	return "Windows 应用操作未完成，请确认客机已解锁且 应用窗口仍在运行"
 }
 
 // Retry only validated frame reads during short window/popup transitions.
@@ -177,7 +177,7 @@ func (s *Server) windowsWindowConnection(ctx context.Context) (*nativeWindowConn
 	return startWindowConnection(cmd, cancel)
 }
 
-const remoteWindowsDesktopMessage = "Windows 云端当前支持隔离 PowerShell、浏览器和 Claude CLI，尚未接通图形会话。Claude Desktop 和完整 Windows 桌面暂不可用；无需重新连接或安装应用。"
+const remoteWindowsDesktopMessage = "Windows 云端当前支持隔离 PowerShell、浏览器和 兼容终端工具，尚未接通图形会话。桌面应用 和完整 Windows 桌面暂不可用；无需重新连接或安装应用。"
 
 func (s *Server) remoteWindowsDesktopUnavailable(w http.ResponseWriter) bool {
 	if s.windowsGuest == nil || !s.windowsGuest.Remote() {
@@ -856,12 +856,12 @@ func (s *Server) windowsDesktopCredentials(w http.ResponseWriter, r *http.Reques
 	defer cancel()
 	var state claudeDesktopState
 	if err := s.windowsDesktopRequest(ctx, "status", nil, &state); err != nil || !state.Running {
-		http.Error(w, "Claude Desktop 尚未启动", 409)
+		http.Error(w, "桌面应用 尚未启动", 409)
 		return
 	}
 	density := state.DisplayScale
 	if density < 1 || density > 8 {
-		http.Error(w, "Claude Desktop 返回了无效的显示比例", 502)
+		http.Error(w, "桌面应用 返回了无效的显示比例", 502)
 		return
 	}
 	jsonReply(w, map[string]any{"password": "", "display_scale": density})

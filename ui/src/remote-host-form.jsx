@@ -174,7 +174,7 @@ export function HostForm({ initial, platform, onSaved, onClose }) {
                   onChange={(event) =>
                     update("config_path", event.target.value)
                   }
-                  placeholder={form.platform === "windows" ? "例如 C:\\ProgramData\\Cage Remote\\config.json" : "默认使用云端账户的 ~/.claude-cage/config.json"}
+                  placeholder={form.platform === "windows" ? "例如 C:\\ProgramData\\Cage Remote\\config.json" : "留空使用远程服务的默认配置"}
                   spellCheck="false"
                 />
                 <small>自定义时填写云端绝对路径。</small>

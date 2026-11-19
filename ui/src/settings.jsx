@@ -504,24 +504,24 @@ export function SettingsPanel({
                   默认使用 24 小时制。保存后更新工作台底部时钟，无需重启环境；12 小时制使用 AM/PM 区分上午和下午。
                 </p>
                 <label>
-                  Claude 终端启动命令
+                  Antigravity 终端启动参数
                   <input
-                    value={draft.claude_terminal_command ?? "claude"}
-                    onChange={(e) => update("claude_terminal_command", e.target.value)}
-                    placeholder="claude"
+                    value={draft.antigravity_terminal_args ?? ""}
+                    onChange={(e) => update("antigravity_terminal_args", e.target.value)}
+                    placeholder="例如 --help"
                     maxLength={4096}
                     spellCheck="false"
                     autoComplete="off"
                   />
                 </label>
                 <p className="field-help">
-                  选择“Claude 终端”后，在所选项目中运行此命令，例如 claude --continue。
-                  留空使用 claude；保存后仅影响新建的 Claude 终端，退出 Claude 后可继续使用 shell。
+                  新建 Antigravity 终端时会在所选项目中运行 agy。
+                  参数用空格分隔，留空使用默认设置。
                 </p>
                 {typeof current.balanced_display === "boolean" && <label className="toggle-row">
                   <span>
                     <strong>优先流畅</strong>
-                    <small>降低浏览器和 Claude Desktop 的清晰度，Linux 环境同时减少 Claude Desktop 的动效。下次启动环境时生效。</small>
+                    <small>降低客机浏览器和桌面应用的清晰度。下次启动环境时生效。</small>
                   </span>
                   <input type="checkbox" role="switch" checked={draft.balanced_display}
                     onChange={(event) => update("balanced_display", event.target.checked)} />
@@ -622,8 +622,7 @@ export function SettingsPanel({
                   <div>
                     <strong>所有项目共用一个 Cage 环境</strong>
                     <p>
-                      明确打开的项目文件夹会共享到同一个环境。主机的 Claude
-                      登录、SSH 密钥和个人配置不会自动导入。浏览器下载统一保存到
+                      明确打开的项目文件夹会共享到同一个环境。主机的 Google 登录状态、SSH 密钥和个人配置不会自动导入。浏览器下载统一保存到
                       独立的下载暂存目录，可从下载面板查看或另存为。
                     </p>
                   </div>

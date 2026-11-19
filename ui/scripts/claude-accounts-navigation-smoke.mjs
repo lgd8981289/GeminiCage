@@ -4,7 +4,7 @@ import { createWorkbench } from "./workbench-fixture.mjs";
 
 const capture = process.env.CAGE_TEST_CAPTURE;
 if (capture) await mkdir(capture, { recursive: true });
-for (const [platform, system] of [["darwin", "macos"], ["win32", "windows-11"], ["linux", "debian-13"]]) {
+for (const [platform, system] of [["linux", "debian-13"], ["darwin", "macos"], ["win32", "windows-11"]]) {
   const { page, state, browser, errors } = await createWorkbench({
     clientContext: { mode: "local", connection_id: "local", client_platform: platform,
       server_platform: platform, connection: { state: "disconnected" } },
@@ -19,21 +19,17 @@ for (const [platform, system] of [["darwin", "macos"], ["win32", "windows-11"], 
       const desktop = { installed: true, running: true, native_user_session: true, version: "4.0", screen: false, input: false };
       await page.route("**/api/claude-desktop", route => route.fulfill({ json: desktop }));
       await page.route("**/api/macos/claude/window", route => route.fulfill({ json: desktop }));
-      await page.route("**/api/claude-accounts*", route => route.fulfill({ json: {
-        accounts: [{ id: "navigation-account", email: "test@example.invalid", label: "测试账号", enabled: true, status: "ready" }],
-        detection_status: "ready", scheduling: { mode: "balanced", switch_policy: "ask" },
-      } }));
     },
   });
   try {
     const nav = page.getByRole("navigation", { name: "主导航" });
-    const entry = nav.getByRole("button", { name: "Claude 账号管理", exact: true });
-    const accountPage = page.getByRole("main", { name: "Claude 账号管理", exact: true });
+    const entry = nav.getByRole("button", { name: "Gemini 账号管理", exact: true });
+    const accountPage = page.getByRole("main", { name: "Gemini 账号管理", exact: true });
     const sidebar = page.getByRole("complementary", { name: "项目与终端" });
     const openAccounts = async () => {
       await entry.click();
       await accountPage.waitFor();
-      await accountPage.getByRole("article", { name: "测试账号", exact: true }).waitFor();
+      await accountPage.getByRole("button", { name: "选择账号并打开 Gemini" }).waitFor();
       assert.equal(await entry.getAttribute("aria-current"), "page");
       assert.ok(await sidebar.isVisible());
       assert.equal(await page.getByRole("dialog").count(), 0);
@@ -43,7 +39,12 @@ for (const [platform, system] of [["darwin", "macos"], ["win32", "windows-11"], 
       assert.ok(await page.locator(".workspace").isHidden());
     };
     await nav.getByRole("button", { name: "打开浏览器", exact: true }).click();
-    await page.locator(".address-bar input").first().waitFor();
+    if (system !== "macos") await page.locator(".address-bar input").first().waitFor();
+    await openAccounts();
+    await accountPage.getByRole("button", { name: "选择账号并打开 Gemini" }).click();
+    await page.waitForFunction(() => !document.querySelector(".management-page"));
+    assert.ok(state.requests.some(request => request.path === "/browser/new" && request.body?.url?.startsWith("https://accounts.google.com/AccountChooser?")), "Google account chooser opens inside guest browser");
+    assert.ok(!state.requests.some(request => request.path.includes("claude-accounts")), "no legacy provider account data is fetched");
     await openAccounts();
     await nav.getByRole("button", { name: "工作台", exact: true }).click();
     await accountPage.waitFor({ state: "hidden" });
@@ -58,11 +59,19 @@ for (const [platform, system] of [["darwin", "macos"], ["win32", "windows-11"], 
     assert.equal(state.terminalConnections, connections, "page switching must preserve the terminal connection");
     await openAccounts();
     await nav.getByRole("button", { name: "打开浏览器", exact: true }).click();
-    await page.locator(".address-bar input").first().waitFor();
-    assert.equal(state.requests.filter(request => request.path === "/browser/new").length, 0);
+    if (system !== "macos") await page.locator(".address-bar input").first().waitFor();
+    assert.equal(state.requests.filter(request => request.path === "/browser/new").length, 1);
     await openAccounts();
-    await nav.getByRole("button", { name: "Claude Desktop", exact: true }).click();
-    await page.locator(".claude-desktop-toolbar").waitFor();
+    if (system.startsWith("windows")) {
+      await nav.getByRole("button", { name: "在 Windows 客机中打开 Gemini" }).click();
+      if (system !== "macos") await page.locator(".address-bar input").first().waitFor();
+    } else {
+      await nav.getByRole("button", { name: "Antigravity", exact: true }).click();
+      await page.locator(".claude-desktop-toolbar").waitFor();
+      await page.getByRole("button", { name: "检测环境", exact: true }).click();
+      await page.getByRole("button", { name: "检测 Antigravity", exact: true }).waitFor();
+      await page.keyboard.press("Escape");
+    }
     await openAccounts();
     await page.getByRole("button", { name: "设置", exact: true }).click();
     await page.getByRole("navigation", { name: "设置分组" }).waitFor();

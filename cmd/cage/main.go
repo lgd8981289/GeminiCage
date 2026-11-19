@@ -33,7 +33,7 @@ import (
 	"syscall"
 )
 
-const help = `Claude Cage — local isolated Claude development
+const help = `Gemini Cage — isolated Gemini and Antigravity workbench
 
 cage desktop       Open the unified Cage workbench (desktop launcher)
 cage agent         Discover and use the versioned, JSON-only external Agent interface
@@ -48,11 +48,10 @@ cage proxy-start   Start Cage's bundled proxy core with the applied node
 cage proxy-stop    Stop Cage's core and close external networking
 cage setup         Build the isolated base VM through the specified proxy
 cage up            Start the shared Cage environment, editor and browser
-cage login         Start cage services, then Claude's login flow inside the VM
+cage login         Start the legacy terminal sign-in flow inside the VM
 cage access        Inspect legacy viewer credentials (diagnostics only)
 cage shell         Open a shell in the shared environment
 cage run COMMAND   Execute a command in the shared environment
-cage claude        Run Claude Code in the shared environment
 cage stop          Stop the shared Cage environment and its proxy core
                    --keep-proxy keeps the core running for an environment restart
 cage list          List this cage profile's VMs
@@ -63,7 +62,7 @@ cage licenses      Print third-party license notices
 
 Configuration: ~/Library/GeminiCage/config.json (override GEMINI_CAGE_CONFIG).
 Each configuration directory is an independent cage profile.
-Only explicitly opened project folders are shared. No host Claude credentials are imported.
+Only explicitly opened project folders are shared. Host sign-in credentials are not imported.
 `
 
 func main() {

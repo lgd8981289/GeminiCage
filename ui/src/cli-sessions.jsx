@@ -165,7 +165,7 @@ export function ArchivedSessions({ request = desktopSessionRequest, ready, onRes
     {progress && <p role="status" className="archive-note">正在处理 {progress.done} / {progress.total} 个会话…</p>}
     {resultMessage && <p role="status" className="archive-note">{resultMessage}</p>}
     {bulkConfirm && <div className="archive-confirm" role="group" aria-label="确认批量永久删除会话">
-      <p>永久删除所选的 {bulkConfirm.length} 个会话及其 Claude Code 原始对话和子代理记录？此操作无法撤销。</p>
+      <p>永久删除所选的 {bulkConfirm.length} 个会话及其 客机终端的原始对话和子代理记录？此操作无法撤销。</p>
       <div className="archived-session-actions"><button className="archive-button" disabled={busy} onClick={() => setBulkConfirm(null)}>取消</button>
         <button className="archive-button archive-delete" disabled={busy || !ready} onClick={() => change(bulkConfirm, "purge")}>永久删除所选会话</button></div>
     </div>}
@@ -196,13 +196,13 @@ export function ArchivedSessions({ request = desktopSessionRequest, ready, onRes
           </div>
           {session.deleting && <p className="archive-note">永久删除尚未完成，连接恢复后可重试。</p>}
           {confirming === session.id && <div className="archive-confirm" role="group" aria-label="确认永久删除会话">
-            <p>永久删除“{session.title || "新会话"}”及其 Claude Code 原始对话和子代理记录？此操作无法撤销。</p>
+            <p>永久删除“{session.title || "新会话"}”及其 客机终端的原始对话和子代理记录？此操作无法撤销。</p>
             <div className="archived-session-actions"><button className="archive-button" disabled={busy} onClick={() => setConfirming("")}>取消</button>
               <button className="archive-button archive-delete" disabled={busy || !ready} onClick={() => change([session], "purge")}>永久删除</button></div>
           </div>}
         </article>;
       })}</div>
     </section>)}
-    {!ready && <p className="archive-note">启动主机环境后可以永久删除 Claude Code 原始记录。</p>}
+    {!ready && <p className="archive-note">启动主机环境后可以永久删除 客机终端的原始记录。</p>}
   </section>;
 }

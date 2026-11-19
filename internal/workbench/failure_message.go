@@ -31,7 +31,7 @@ func executionFailure(action string, err error, output string) error {
 		{[]string{"cage_windows_maintenance_host_relay"}, "Windows 主机连接组件更新未完成", "请关闭占用连接组件的程序，再重试同步环境组件。"},
 		{[]string{"cage_windows_maintenance_package_preparation"}, "Windows 组件包准备未完成", "请检查应用目录和系统盘空间后重试，更新工具时同时检查已选代理。"},
 		{[]string{"cage_windows_maintenance_failed"}, "Windows 维护未完成", "请从 Cage 重新发起原操作，仍失败时导出诊断包。"},
-		{[]string{"desktop file service state=failed"}, "Claude Desktop 的文件服务已经退出", "请从 Cage 重新打开 Claude Desktop；若应用反复退出，请在设置中查看资源用量并导出诊断包。"},
+		{[]string{"desktop file service state=failed"}, "桌面应用 的文件服务已经退出", "请从 Cage 重新打开 桌面应用；若应用反复退出，请在设置中查看资源用量并导出诊断包。"},
 		{[]string{"curl: (7)", "connection refused"}, "目标服务没有接受连接", "请确认环境及所选代理已启动；文件传递时请重新打开接收文件的应用，再重试。"},
 		{[]string{"no space left on device", "not enough space on the disk"}, "磁盘空间不足，无法继续写入", "请释放环境所在磁盘的空间后继续；不要删除 Cage 的个人数据目录。"},
 		{[]string{"could not get lock", "unable to acquire the dpkg", "another process using it"}, "环境中已有另一个软件安装或更新进程", "请等待当前安装结束后再继续；不要手动删除安装锁文件。"},

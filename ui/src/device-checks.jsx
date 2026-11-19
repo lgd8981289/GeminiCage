@@ -22,11 +22,11 @@ export function DeviceChecks({ target, disabled = false }) {
     <p>核对实际配置、浏览器身份和图形能力。结果用于排查不一致，不作为物理设备或匿名性认证。</p>
     <div className="device-check-actions">
       {(!target || target === "browser") && <button disabled={busy || disabled} onClick={() => run("browser")}>{busy ? "正在检测…" : "检测浏览器"}</button>}
-      {(!target || target === "desktop") && <button disabled={busy || disabled} onClick={() => run("desktop")}>{busy ? "正在检测…" : "检测 Claude Desktop"}</button>}
+      {(!target || target === "desktop") && <button disabled={busy || disabled} onClick={() => run("desktop")}>{busy ? "正在检测…" : "检测 Antigravity"}</button>}
     </div>
     {error && <p role="alert"><SafetyMessage message={error} /></p>}
     {report && <div aria-live="polite">
-      <p>{report.target === "desktop" ? "Claude Desktop" : "浏览器"} · {new Date(report.checked_at).toLocaleString()}</p>
+      <p>{report.target === "desktop" ? "Antigravity" : "浏览器"} · {new Date(report.checked_at).toLocaleString()}</p>
       {report.renderer_class && <p>实际图形环境：{renderers[report.renderer_class] || "未观测"}</p>}
       {report.browser && <details><summary>浏览器实际观测值</summary><dl>
         <dt>User Agent</dt><dd>{report.browser.user_agent}</dd>

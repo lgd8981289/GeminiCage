@@ -410,7 +410,7 @@ func (a *localAccount) desktopKey() ([]byte, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if len(a.key) != 32 {
-		return nil, errors.New("请先登录 Cage，再打开 Claude Desktop")
+		return nil, errors.New("请先登录 Cage，再打开 桌面应用")
 	}
 	// Base64 is accepted by the keyring without newline/encoding ambiguity.
 	encoded := make([]byte, base64.RawStdEncoding.EncodedLen(len(a.key)))

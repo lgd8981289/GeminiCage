@@ -308,11 +308,16 @@ func (s *Server) deviceCheck(w http.ResponseWriter, r *http.Request) {
 			evidence := "应用未运行，无法观测进程状态。"
 			if state.Running {
 				status = "observed"
-				evidence = "已观测到 桌面应用 运行状态及版本 " + state.Version
+				evidence = "已检测到 Antigravity 正在运行。"
+				if state.Version != "" {
+					evidence += "版本 " + state.Version
+				}
 			}
-			report.Checks = append(report.Checks, deviceCheckItem{"desktop-process", "桌面应用 应用", status, evidence})
+			report.Checks = append(report.Checks, deviceCheckItem{"desktop-process", "Antigravity 进程", status, evidence})
+		} else {
+			report.Checks = append(report.Checks, deviceCheckItem{"desktop-process", "Antigravity 进程", "unknown", "当前客机未返回 Antigravity 的进程状态。"})
 		}
-		report.Checks = append(report.Checks, deviceCheckItem{"desktop-renderer", "桌面应用 内部渲染器", "unknown", "官方应用没有受支持的本地渲染自检接口；未读取登录资料、注入代码或开启调试端口，未用浏览器结果代替应用内观测。"})
+		report.Checks = append(report.Checks, deviceCheckItem{"desktop-renderer", "Antigravity 内部渲染器", "unknown", "官方应用没有受支持的本地渲染自检接口；未读取登录资料、注入代码或开启调试端口，未用浏览器结果代替应用内观测。"})
 	} else {
 		cfg, e := loadConfig(s.configPath)
 		if e != nil {
@@ -345,8 +350,7 @@ func (s *Server) deviceCheck(w http.ResponseWriter, r *http.Request) {
 func (s *Server) deviceDesktopState(ctx context.Context) (*claudeDesktopState, error) {
 	var state claudeDesktopState
 	if s.windowsGuest != nil {
-		err := s.windowsDesktopRequest(ctx, "status", nil, &state)
-		return &state, err
+		return nil, errors.New("Windows 客机暂未接入 Antigravity 进程检测")
 	}
 	if s.macosGuest != nil {
 		data, err := s.guest(ctx, `app=/Applications/Antigravity.app; if test -d /Applications/Antigravity/Antigravity.app; then app=/Applications/Antigravity/Antigravity.app; fi; test -d "$app" && printf 'installed\n'; /usr/bin/pgrep -x Antigravity >/dev/null && printf 'running\n'; /usr/bin/defaults read "$app/Contents/Info" CFBundleShortVersionString 2>/dev/null || true`)

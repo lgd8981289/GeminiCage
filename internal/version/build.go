@@ -9,8 +9,14 @@ type Build struct {
 	Modified bool   `json:"modified"`
 }
 
+// DistributionVersion is the desktop release, independent of the guest kit version.
+var DistributionVersion string
+
 func CurrentBuild() Build {
 	b := Build{Version: Version}
+	if DistributionVersion != "" {
+		b.Version = DistributionVersion
+	}
 	if info, ok := debug.ReadBuildInfo(); ok {
 		for _, setting := range info.Settings {
 			switch setting.Key {

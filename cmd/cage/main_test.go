@@ -110,8 +110,8 @@ func TestStatelessCommandsNeedNoProfile(t *testing.T) {
 		wantStdout string
 		wantStderr string
 	}{
-		{name: "help", args: []string{"help"}, wantStdout: "Claude Cage"},
-		{name: "short help", args: []string{"-h"}, wantStdout: "Claude Cage"},
+		{name: "help", args: []string{"help"}, wantStdout: "Gemini Cage"},
+		{name: "short help", args: []string{"-h"}, wantStdout: "Gemini Cage"},
 		{name: "version", args: []string{"version"}, wantStdout: version.Version},
 		{name: "long version", args: []string{"--version"}, wantStdout: version.Version},
 		{name: "short version", args: []string{"-V"}, wantStdout: version.Version},

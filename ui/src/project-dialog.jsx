@@ -285,7 +285,7 @@ export function ProjectDialog({
             <button type="button" disabled={browsing || !directories.selectable} onClick={() => { appendFolder(directories.path); setDirectories(null); }}>选择此云端文件夹</button>
           </section>}
         </>}
-        {adding && <p className="field-help">Claude 从默认文件夹启动，并可读写其余绑定文件夹。修改绑定后，新建或重新打开会话生效。{editing && "默认文件夹用于关联会话历史，需保留。解绑前请关闭项目的终端、运行中会话和编辑器。"}</p>}
+        {adding && <p className="field-help">项目终端从默认文件夹启动，并可读写其余绑定文件夹。修改绑定后，新建或重新打开会话生效。{editing && "默认文件夹用于关联会话历史，需保留。解绑前请关闭项目的终端、运行中会话和编辑器。"}</p>}
         <p className="field-help project-picker-note">
           <span>{remote ? "云端项目保存在服务器上。" : "绑定文件夹中的改动会直接写入本机。"}</span>
           <span>所有项目共用 Cage 环境，已有终端和网页会保持运行。</span>

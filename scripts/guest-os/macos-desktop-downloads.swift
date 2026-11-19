@@ -70,7 +70,7 @@ final class MacDesktopDownloads {
             records = saved.filter { UUID(uuidString: $0.id) != nil && Self.validName($0.name) }
             for index in records.indices where records[index].state == "downloading" {
                 records[index].state = "failed"
-                records[index].error = "保存过程被中断，请从 Claude Desktop 重新下载。"
+                records[index].error = "保存过程被中断，请从 Antigravity 重新下载。"
             }
         }
         self.root = root
@@ -193,7 +193,7 @@ final class MacDesktopDownloads {
         let watcher = try MacDownloadWatch(directory: path.deletingLastPathComponent().path, file: path.path) { [weak self] valid in
             Task { @MainActor in
                 if valid { await self?.complete(record.id, pid: pid) }
-                else { self?.fail(record.id, message: "保存通知已中断，请从 Claude Desktop 重新下载。") }
+                else { self?.fail(record.id, message: "保存通知已中断，请从 Antigravity 重新下载。") }
             }
         }
         records.append(record); watches[record.id] = watcher
@@ -202,7 +202,7 @@ final class MacDesktopDownloads {
         watcher.expiry = Task { @MainActor [weak self] in
             try? await Task.sleep(nanoseconds: 1800 * 1_000_000_000)
             if self?.records.first(where: { $0.id == record.id })?.state == "downloading" {
-                self?.fail(record.id, message: "未能确认文件保存完成，请从 Claude Desktop 重新下载。")
+                self?.fail(record.id, message: "未能确认文件保存完成，请从 Antigravity 重新下载。")
             }
         }
     }
@@ -239,7 +239,7 @@ final class MacDesktopDownloads {
             } catch { }
             try? await Task.sleep(nanoseconds: 250_000_000)
         }
-        fail(id, message: "未能确认文件保存完成，请从 Claude Desktop 重新下载。")
+        fail(id, message: "未能确认文件保存完成，请从 Antigravity 重新下载。")
     }
     func snapshot() throws -> [[String: Any]] {
         _ = try directory()

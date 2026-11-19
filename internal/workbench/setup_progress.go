@@ -142,7 +142,7 @@ func parseSetupProgress(line string) *SetupProgress {
 		case "chromium-common.deb":
 			p.Phase, p.Label = "packages", "正在下载 Chromium 公共资源"
 		case "claude-code-linux-x64.tgz", "claude-code-linux-arm64.tgz":
-			p.Label = "正在下载 Claude Code"
+			p.Label = "正在下载兼容终端工具"
 		default:
 			return nil
 		}
@@ -164,7 +164,7 @@ func parseSetupProgress(line string) *SetupProgress {
 	case "Installing mise...":
 		return &SetupProgress{Phase: "packages", Label: "正在安装 mise"}
 	case "Installing Claude Code...":
-		return &SetupProgress{Phase: "tools", Label: "正在安装 Claude Code"}
+		return &SetupProgress{Phase: "tools", Label: "正在安装兼容终端工具"}
 	case "Installing code-server...":
 		return &SetupProgress{Phase: "tools", Label: "正在安装网页编辑器 code-server"}
 	}
@@ -177,8 +177,8 @@ func parseSetupProgress(line string) *SetupProgress {
 func macOSDownloadLabel(name string) string {
 	component := map[string]string{
 		"editor.tgz": "macOS 网页编辑器", "node.tgz": "Node.js",
-		"macfuse.dmg": "macFUSE 文件共享组件", "antigravity.dmg": "Claude Desktop", "chrome.dmg": "Chrome 浏览器",
-		"macos-cli-claude": "Claude Code", "macos-cli-uv.tar.gz": "uv 开发工具",
+		"macfuse.dmg": "macFUSE 文件共享组件", "antigravity.dmg": "Antigravity", "chrome.dmg": "Chrome 浏览器",
+		"macos-cli-claude": "兼容终端工具", "macos-cli-uv.tar.gz": "uv 开发工具",
 		"macos-cli-python.tar.gz": "Python", "macos-cli-git.tar.gz": "Git", "macos-cli-gh.zip": "GitHub CLI",
 	}[name]
 	if component == "" {

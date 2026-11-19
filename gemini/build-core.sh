@@ -20,7 +20,8 @@ cp go.sum "$tmp/fork.sum"
 go mod edit -modfile="$tmp/fork.mod" -replace "$mod=./$tmp/vz"
 export MACOSX_DEPLOYMENT_TARGET=14.0
 tags=yq_noxml,yq_nolua,yq_noini,yq_nohcl,yq_notoml,yq_noprops,yq_nocsv,yq_nouri,yq_nobase64,yq_nosh,yq_noshell
-go build -modfile="$tmp/fork.mod" -trimpath -tags "$tags" -ldflags "-s -w -X github.com/sylvinus/agent-vm/internal/version.Version=$(cat VERSION) -X github.com/lima-vm/lima/v2/pkg/version.Version=$(cat internal/limaembed/lima-version)" -o _output/bin/cage ./cmd/cage
+app_version=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" gemini/Info.plist)
+go build -modfile="$tmp/fork.mod" -trimpath -tags "$tags" -ldflags "-s -w -X github.com/sylvinus/agent-vm/internal/version.DistributionVersion=$app_version -X github.com/sylvinus/agent-vm/internal/version.Version=$(cat VERSION) -X github.com/lima-vm/lima/v2/pkg/version.Version=$(cat internal/limaembed/lima-version)" -o _output/bin/cage ./cmd/cage
 codesign -f -s - --entitlements third_party/lima/vz.entitlements _output/bin/cage
 _output/bin/cage verify-web-assets
 _output/bin/cage verify-macos-guest

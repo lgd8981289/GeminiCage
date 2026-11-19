@@ -264,7 +264,7 @@ final class CageAppUpdater {
         self.bundleURL = bundleURL.resolvingSymlinksInPath()
         self.onChange = onChange; self.quit = quit; self.reconnect = reconnect
         root = CageProfile.configURL().deletingLastPathComponent().appendingPathComponent("updates", isDirectory: true)
-        let version = Bundle(url: bundleURL)?.object(forInfoDictionaryKey: "CageVersion") as? String ?? "开发版本"
+        let version = Bundle(url: bundleURL)?.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "开发版本"
         state = ["phase": "idle", "currentVersion": version, "message": ""]
         if let data = try? Data(contentsOf: root.appendingPathComponent("last-result.json")), data.count < 16384,
            let result = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {

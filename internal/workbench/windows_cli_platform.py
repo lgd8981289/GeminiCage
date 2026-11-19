@@ -77,13 +77,13 @@ def terminate_cli(pid, force=False):
     except OSError:
         same_binary = False
     if not same_binary or not kernel.ProcessIdToSessionId(os.getpid(), ctypes.byref(own)) or fingerprint[2] != own.value:
-        raise ValueError("原生 Claude 进程身份不匹配，未停止其他程序")
+        raise ValueError("原生 终端进程身份不匹配，未停止其他程序")
     handle = kernel.OpenProcess(0x1001, False, int(pid))
     if not handle:
         raise ProcessLookupError("CLI process no longer exists")
     try:
         if process_fingerprint(pid) != fingerprint or not kernel.TerminateProcess(handle, 130):
-            raise ValueError("无法停止已核验的原生 Claude 进程")
+            raise ValueError("无法停止已核验的原生 终端进程")
     finally:
         kernel.CloseHandle(handle)
 
@@ -130,7 +130,7 @@ def launch_cli(args, request, connection, state_file):
     if request.get("subject"):
         reading = account["identity"](args[0], env, Path.cwd(), account["settings_flags"](args[1:]))
         if account["subject"](reading) != request["subject"]:
-            raise ValueError("项目与所选 Claude 账号身份不一致")
+            raise ValueError("项目与所选 兼容终端账号身份不一致")
     child = CliProcess([account['_runtime']['path'](args[0]), *args[1:]], env)
     with state_file(connection) as state:
         state["pid"] = child.pid

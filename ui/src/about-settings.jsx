@@ -3,7 +3,7 @@ import { ExternalLink, LoaderCircle, RefreshCw } from "lucide-react";
 import { api, native, nativeAvailable } from "./api";
 import "./about-settings.css";
 
-const repository = "https://github.com/Lee-xeo/Claude-Cage";
+const repository = "https://github.com/lgd8981289/GeminiCage";
 const sourceMessages = {
   current: "已与主分支同步",
   available: "主分支有新提交",

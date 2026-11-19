@@ -17,27 +17,10 @@ import { DeviceChecks } from "./device-checks";
 import { networkState, reportForSharing } from "./safety-state.mjs";
 
 const diagnostics = [
-  {
-    name: "IP 质量",
-    source: "ip.net.coffee",
-    url: "https://ip.net.coffee/claude/",
-    description: "查看 IP 属性、ASN、信誉评分与网络诊断。",
-  },
-  {
-    name: "浏览器信息",
-    source: "fuck-claude.vercel.app",
-    url: "https://fuck-claude.vercel.app/",
-    description: "查看时区、语言、字体等浏览器信号的社区评估。",
-    attribution: "原项目 FuckClaude 由 LinXiaoTao 创建并持续维护。",
-    links: [
-      { label: "原项目官网", url: "https://fuck-claude.vercel.app/" },
-      { label: "开源仓库", url: "https://github.com/LinXiaoTao/FuckClaude" },
-      {
-        label: "初始提交",
-        url: "https://github.com/LinXiaoTao/FuckClaude/commit/420c79bb0531b12ea2788e726ffbf81075111737",
-      },
-    ],
-  },
+  { name: "IP 信息", source: "ipinfo.io", url: "https://ipinfo.io/what-is-my-ip", description: "查看当前客机的公网 IP、网络运营商与大致地理位置。" },
+  { name: "浏览器信息", source: "browserleaks.com", url: "https://browserleaks.com/javascript", description: "查看浏览器报告的时区、语言和显示参数。" },
+  { name: "Gemini 网页版", source: "gemini.google.com", url: "https://gemini.google.com/", description: "在客机浏览器中检查 Gemini 服务是否可以打开。" },
+  { name: "Google 登录", source: "accounts.google.com", url: "https://accounts.google.com/", description: "检查客机能否打开 Google 账号登录页。" },
 ];
 
 export async function bindDetectedMacOSExit(ip, onConfirm) {
@@ -285,8 +268,7 @@ export function SafetyPanel({
           ))}
         </div>
         <p className="field-help">
-          点击后才访问第三方站点。站点会收到 Cage 的出口
-          IP，并可读取该页面可访问的浏览器信息。评分属于社区参考。
+          链接在客机浏览器中打开，使用当前环境的网络出口。
         </p>
         <details className="safety-scope">
           <summary>检查范围与来源</summary>
@@ -299,29 +281,7 @@ export function SafetyPanel({
             报告包含运行时策略和采样证据，不能代替完整虚拟化审计，也不代表平台账号资格或封禁预测。全面检查有效期为
             24 小时；控制服务失联后，联网授权最多保留 90 秒。
           </p>
-          <div className="safety-sources">
-            <span>方法参考</span>
-            <button
-              className="text-button"
-              disabled={!online}
-              onClick={() =>
-                open("https://github.com/YOURSJEYO/claude-switcher")
-              }
-            >
-              claude-switcher
-              <ArrowUpRight size={12} />
-            </button>
-            <button
-              className="text-button"
-              disabled={!online}
-              onClick={() =>
-                open("https://github.com/DUNHKpcc/Claude-Guardian")
-              }
-            >
-              Claude-Guardian
-              <ArrowUpRight size={12} />
-            </button>
-          </div>
+
         </details>
       </div>
     </Modal>

@@ -112,15 +112,15 @@ func (s *Server) openNativeDesktopDownload(ctx context.Context, id string) (io.R
 func desktopDownloadFailure(reason string) error {
 	switch reason {
 	case "desktop_download_incomplete":
-		return errors.New("Claude Desktop 尚未完整保存文件，请回到应用重新下载")
+		return errors.New("桌面应用 尚未完整保存文件，请回到应用重新下载")
 	case "desktop_download_changed":
-		return errors.New("Claude Desktop 下载文件在传输中发生变化，请重新下载")
+		return errors.New("桌面应用 下载文件在传输中发生变化，请重新下载")
 	case "desktop_download_unavailable", "desktop_download_transfer_invalid":
-		return errors.New("Claude Desktop 下载文件已不可用，请确认客机已解锁后重新下载")
+		return errors.New("桌面应用 下载文件已不可用，请确认客机已解锁后重新下载")
 	case "desktop_download_limit":
-		return errors.New("待保存的 Claude Desktop 文件过多，请先完成现有下载后重试")
+		return errors.New("待保存的 桌面应用 文件过多，请先完成现有下载后重试")
 	case "file_open_target_changed":
-		return errors.New("文件或 Claude 窗口已变化，请回到原窗口重新打开文件")
+		return errors.New("文件或 应用窗口已变化，请回到原窗口重新打开文件")
 	case "file_open_request_invalid", "file_open_request_unavailable":
 		return errors.New("文件打开请求已失效，请确认客机已解锁后重新操作")
 	case "file_open_request_limit":

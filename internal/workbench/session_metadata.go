@@ -193,7 +193,7 @@ func (s *Server) mobilePurgeSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !input.Confirm {
-		http.Error(w, "需要确认永久删除该会话及 Claude Code 原始历史", 400)
+		http.Error(w, "需要确认永久删除该会话及 兼容终端工具 原始历史", 400)
 		return
 	}
 	if err := s.purgeSession(r.Context(), r.PathValue("id")); err != nil {
@@ -300,7 +300,7 @@ func (s *Server) terminalSessionMetadata(w http.ResponseWriter, r *http.Request)
 	}
 	id, _ := terminal.summary()["cli_session_id"].(string)
 	if id == "" {
-		http.Error(w, "此终端没有共享 Claude Code 会话", 409)
+		http.Error(w, "此终端没有共享 兼容终端工具 会话", 409)
 		return
 	}
 	var input sessionMetadataInput

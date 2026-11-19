@@ -18,11 +18,11 @@ func TestAntigravityTerminalStartsInstalledCLIInSelectedProject(t *testing.T) {
 		}
 	}
 	// A local CLI reports its working directory, with no installer or OAuth needed.
-	if err := os.WriteFile(filepath.Join(bin, "agy"), []byte("#!/bin/sh\npwd -P\n"), 0700); err != nil {
+	if err := os.WriteFile(filepath.Join(bin, "agy"), []byte("#!/bin/sh\npwd -P\nprintf '%s\\n' \"$@\"\n"), 0700); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("HOME", home)
-	command := exec.Command("/bin/sh", "-c", antigravityTerminalScript(project))
+	command := exec.Command("/bin/sh", "-c", antigravityTerminalScript(project, "--label", "two words", "$(false)"))
 	output, err := command.CombinedOutput()
 	if err != nil {
 		t.Fatalf("launch: %v: %s", err, output)
@@ -35,7 +35,7 @@ func TestAntigravityTerminalStartsInstalledCLIInSelectedProject(t *testing.T) {
 	if err := exec.Command("/bin/sh", "-c", antigravityTerminalScript(missing)).Run(); err == nil {
 		t.Fatal("terminal started outside the selected project")
 	}
-	if got := strings.TrimSpace(string(output)); got != want {
+	if got := strings.TrimSpace(string(output)); got != want+"\n--label\ntwo words\n$(false)" {
 		t.Errorf("CLI opened in %q, want %q", got, want)
 	}
 }

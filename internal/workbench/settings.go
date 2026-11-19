@@ -22,17 +22,18 @@ import (
 )
 
 type Preferences struct {
-	TransferAllowUnclean  bool   `json:"transfer_allow_unclean"`
-	BalancedDisplay       bool   `json:"balanced_display"`
-	ProjectFileCache      bool   `json:"project_file_cache"`
-	MobileRelay           string `json:"mobile_relay,omitempty"`
-	Workspace             string `json:"workspace"`
-	BrowserHomeURL        string `json:"browser_home_url"`
-	ClaudeTerminalCommand string `json:"claude_terminal_command"`
-	Keyboard              string `json:"keyboard"`
-	Clock12Hour           bool   `json:"clock_12_hour"`
-	AutoTimezone          bool   `json:"auto_timezone"`
-	AutoLanguage          bool   `json:"auto_language"`
+	TransferAllowUnclean    bool   `json:"transfer_allow_unclean"`
+	BalancedDisplay         bool   `json:"balanced_display"`
+	ProjectFileCache        bool   `json:"project_file_cache"`
+	MobileRelay             string `json:"mobile_relay,omitempty"`
+	Workspace               string `json:"workspace"`
+	BrowserHomeURL          string `json:"browser_home_url"`
+	AntigravityTerminalArgs string `json:"antigravity_terminal_args,omitempty"`
+	ClaudeTerminalCommand   string `json:"claude_terminal_command"`
+	Keyboard                string `json:"keyboard"`
+	Clock12Hour             bool   `json:"clock_12_hour"`
+	AutoTimezone            bool   `json:"auto_timezone"`
+	AutoLanguage            bool   `json:"auto_language"`
 }
 
 const defaultBrowserHomeURL = "https://gemini.google.com/"
@@ -191,8 +192,11 @@ func proposedSettings(input Settings, old cage.Config, profile string) (cage.Con
 	if p.MobileRelay != "" && (!strings.HasPrefix(p.MobileRelay, "https://") || !mobilelink.ValidRelayOrigin(p.MobileRelay)) {
 		return c, p, errors.New("中继地址须为 HTTPS 地址，只包含主机和可选端口")
 	}
+	if len(p.AntigravityTerminalArgs) > 4096 || strings.ContainsAny(p.AntigravityTerminalArgs, "\x00\r\n") {
+		return c, p, errors.New("Antigravity 启动参数必须为一行，且不超过 4096 字节")
+	}
 	if len(p.ClaudeTerminalCommand) > 4096 || strings.ContainsAny(p.ClaudeTerminalCommand, "\x00\r\n") {
-		return c, p, errors.New("Claude 终端命令必须为一行，且不超过 4096 字节")
+		return c, p, errors.New("兼容终端命令必须为一行，且不超过 4096 字节")
 	}
 	p.ClaudeTerminalCommand = claudeTerminalCommand(p)
 	p.BrowserHomeURL = strings.TrimSpace(browserHomeURL(p))

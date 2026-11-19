@@ -23,7 +23,7 @@ export function operationName(path = "", method = "GET") {
   if (path.startsWith("/diagnostics")) return "读取诊断日志";
   if (path.startsWith("/projects")) return "连接项目目录";
   if (path.startsWith("/account")) return "处理账户操作";
-  if (path.startsWith("/claude-desktop")) return "操作 Claude Desktop";
+  if (path.startsWith("/claude-desktop")) return "操作桌面应用";
   if (path.startsWith("/terminals")) return "连接终端";
   if (path === "/start") return "启动环境";
   if (path === "/stop") return "停止环境";

@@ -272,11 +272,11 @@ def view(config, session_id, path=None):
     modified = max(path.stat().st_mtime if path else 0, float(state.get("updated_at", 0)))
     notice = state.get("native_ccs_notice", "")
     if state.get("blocked"):
-        notice = "这台主机的 Claude Code 管理策略关闭了 Channels，请由主机管理员处理。"
+        notice = "这台主机的 兼容终端工具 管理策略关闭了 Channels，请由主机管理员处理。"
     elif state.get("policy_unavailable"):
         notice = "Cage 默认环境的通道配置未能更新，请在电脑更新环境组件。"
     return {"cli_id": session_id, "config": str(config), "connection": connection, "native_ccs_unverified": bool(state.get("native_ccs_unverified")),
-            "workspace": workspace or state.get("workspace", ""), "title": title or (turns[0]["prompt"][:40] if turns else "Claude Code"),
+            "workspace": workspace or state.get("workspace", ""), "title": title or (turns[0]["prompt"][:40] if turns else "终端会话"),
             "updated_at": modified, "turns": turns, "running": bool(running), "active": bool(running and (state.get("busy") or state.get("approvals"))), "channel_ready": bool(channel), "can_send": bool(channel and not state.get("resume_task")), "has_history": has_history, "history_truncated": shortened,
             "connection_notice": "" if channel else notice, "account_failure": state.get("account_failure", ""),
             "resume_pending": bool(state.get("resume_task")), "native_history": native_history}
@@ -355,7 +355,7 @@ def discover(request):
             connection, state = connection_for(session_id, config)
             process = process_state(session_id)
             item = {"cli_id": session_id, "config": config_name, "connection": connection,
-                    "workspace": workspace, "title": title or "Claude Code", "updated_at": path.stat().st_mtime,
+                    "workspace": workspace, "title": title or "终端会话", "updated_at": path.stat().st_mtime,
                     "running": process["running"] or bool(live(state.get("pid")) and not state.get("closed")),
                     "claude_desktop": process["claude_desktop"],
                     "active": bool(live(state.get("pid")) and not state.get("closed") and (state.get("busy") or state.get("approvals")))}
@@ -570,7 +570,7 @@ def prepare_account_switch(request):
         raise ValueError("原账号仍有其他执行任务，请结束后台任务后再交接")
     for row in rows:
         if row.get("cwd") != workspace or row.get("status") != "idle" or row.get("kind") != "interactive":
-            raise ValueError("原 Claude Code 尚未安全停止，请先结束本轮任务")
+            raise ValueError("原 兼容终端工具 尚未安全停止，请先结束本轮任务")
     pid = state.get("pid")
     fingerprint = process_fingerprint(pid) if live(pid) else ""
     def executing():
@@ -581,7 +581,7 @@ def prepare_account_switch(request):
         status = subprocess.run(["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True, timeout=2)
         return bool(status.stdout.strip()) and not status.stdout.lstrip().startswith("Z")
     if executing() and not any(row.get("pid") == pid for row in rows):
-        raise ValueError("无法核对原进程状态，请先退出原 Claude Code 后重试")
+        raise ValueError("无法核对原进程状态，请先退出原 兼容终端工具 后重试")
     for row in rows:
         terminate_cli(row["pid"])
     deadline = time.monotonic() + 5
@@ -652,7 +652,7 @@ def purge_session(request):
     config = config.resolve()
     workspace = request["workspace"].rstrip("/")
     if active_session(session_id, str(config)):
-        raise ValueError("Claude Code 仍在运行这段会话，请先结束原终端中的 Claude Code")
+        raise ValueError("兼容终端工具 仍在运行这段会话，请先结束原终端中的 兼容终端工具")
     projects = config / "projects"
     if projects.is_symlink():
         raise ValueError("会话目录是符号链接，请检查主机配置")
@@ -719,7 +719,7 @@ def launch(request):
     _, previous = connection_for(session_id, config_directory("default"))
     if request.get("resume"):
         if active_session(request["resume"]):
-            raise ValueError("原会话仍在电脑终端运行，请先结束该终端中的 Claude Code 再接续")
+            raise ValueError("原会话仍在电脑终端运行，请先结束该终端中的 兼容终端工具 再接续")
     command = _runtime["command_text"](__file__, ["hook", connection])
     events = ("SessionStart", "UserPromptSubmit", "MessageDisplay", "PreToolUse", "PostToolUse", "PostToolUseFailure", "Stop", "StopFailure", "SessionEnd")
     handler = {"type": "command", "command": command, "timeout": 5}
