@@ -41,12 +41,12 @@ func windowsHostManagerRequestCall(ctx context.Context, request windowsHostManag
 		// The verified service opens the destination using this caller's rights.
 		level = winio.PipeImpLevelImpersonation
 	}
-	connection, err := winio.DialPipeAccessImpLevel(connect, `\\.\pipe\Cage.HyperV.`+id.String(), 0x120003, level)
+	connection, err := winio.DialPipeAccessImpLevel(connect, `\\.\pipe\GeminiCage.HyperV.`+id.String(), 0x120003, level)
 	finish()
 	if err != nil && ctx.Err() == nil {
 		if startErr := startRegisteredWindowsHostManager(id); startErr == nil {
 			retry, finish := context.WithTimeout(ctx, 10*time.Second)
-			connection, err = winio.DialPipeAccessImpLevel(retry, `\\.\pipe\Cage.HyperV.`+id.String(), 0x120003, level)
+			connection, err = winio.DialPipeAccessImpLevel(retry, `\\.\pipe\GeminiCage.HyperV.`+id.String(), 0x120003, level)
 			finish()
 		}
 	}
@@ -122,7 +122,7 @@ func verifyWindowsHostManagerPeer(connection net.Conn, id uuid.UUID) error {
 		return errors.New("Windows 系统管理服务身份无法读取")
 	}
 	defer windows.CloseServiceHandle(manager)
-	name, _ := windows.UTF16PtrFromString("CageHV-" + id.String())
+	name, _ := windows.UTF16PtrFromString("GeminiCageHV-" + id.String())
 	service, err := windows.OpenService(manager, name, windows.SERVICE_QUERY_CONFIG|windows.SERVICE_QUERY_STATUS)
 	if err != nil {
 		return errors.New("Windows 系统管理服务未登记或当前用户不可读取")
@@ -148,12 +148,12 @@ func verifyWindowsHostManagerService(service windows.Handle, id uuid.UUID) error
 	if err != nil {
 		return err
 	}
-	expected := filepath.Join(program, "Cage Host Manager", id.String(), "Cage.HyperVManager.exe")
+	expected := filepath.Join(program, "GeminiCage Host Manager", id.String(), "Cage.HyperVManager.exe")
 	data, err := windows.KnownFolderPath(windows.FOLDERID_ProgramData, 0)
 	if err != nil {
 		return err
 	}
-	binding := filepath.Join(data, "Cage", "HyperVManager", id.String(), "binding.json")
+	binding := filepath.Join(data, "GeminiCage", "HyperVManager", id.String(), "binding.json")
 	arguments, err := windows.DecomposeCommandLine(binaryPath)
 	if err != nil || len(arguments) != 4 || !strings.EqualFold(filepath.Clean(arguments[0]), filepath.Clean(expected)) || arguments[1] != "service" || arguments[2] != "--binding" || !strings.EqualFold(filepath.Clean(arguments[3]), filepath.Clean(binding)) {
 		return errors.New("Windows 系统管理程序不属于已登记的安装位置")

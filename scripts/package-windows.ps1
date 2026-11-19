@@ -11,7 +11,7 @@ param(
 )
 . (Join-Path $PSScriptRoot 'windows-common.ps1')
 $repository = Split-Path $PSScriptRoot -Parent
-$version = Get-CageVersion $repository
+$version = (Get-Content (Join-Path $repository 'gemini/windows-version.txt') -Raw).Trim()
 $signed = $Release -or $Sign
 if (-not $AppDirectory) { $AppDirectory = Join-Path $repository '_output/windows-amd64/app' }
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $repository "_output/releases/$version/windows" }
@@ -23,7 +23,7 @@ $makeNSIS = Get-BuildCommand @('makensis.exe', 'makensis') -Optional
 if (-not $makeNSIS) { throw 'NSIS (makensis) is missing from PATH. See scripts/install-nsis.ps1 and docs/windows.md#windows-源码构建.' }
 $sevenZip = Get-BuildCommand @('7z.exe', '7zz', '7z')
 if (-not $SkipBuild) { & (Join-Path $PSScriptRoot 'build-windows.ps1') -Release:$Release -Sign:$Sign -OutputDirectory $AppDirectory -DependencyCache $DependencyCache }
-if ((Get-Content -LiteralPath (Join-Path $AppDirectory 'Cage.install-id') -Raw) -ne 'io.github.lee-xeo.claude-cage') { throw 'Invalid Cage app directory.' }
+if ((Get-Content -LiteralPath (Join-Path $AppDirectory 'Cage.install-id') -Raw) -ne 'local.sunday.gemini-cage') { throw 'Invalid Cage app directory.' }
 if ((Get-Content -LiteralPath (Join-Path $AppDirectory 'version.txt') -Raw).Trim() -ne $version) { throw 'App version differs from VERSION; rebuild before packaging.' }
 $signTool = $null
 $qemuRuntime = Join-Path $AppDirectory 'resources/runtime/qemu'
@@ -68,9 +68,16 @@ if ($IsWindows) {
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 # Verify source material before the expensive installer compression.
 $dependencies = Get-Content -LiteralPath (Join-Path $repository 'packaging/windows/dependencies.json') -Raw | ConvertFrom-Json
-$qemuTar = Get-VerifiedGitArchive $dependencies.qemuSource $DependencyCache
+$pinnedSources = $QemuSourceArchive -and -not $signed
+if ($pinnedSources) {
+    if ((Get-FileHash -LiteralPath $QemuSourceArchive).Hash -ne '1d519eb607fc4d519b860a65150e7d78941eba19302aa3061574bec316850896') { throw '上游 QEMU 完整源码校验失败。' }
+    $identity = Get-Content (Join-Path $qemuRuntime 'cage-build.json') -Raw | ConvertFrom-Json
+    if ($identity.unsignedManifestSha256 -ne (Get-WindowsQemuSourceManifestHash $QemuSourceArchive)) { throw 'QEMU 运行时和对应源码不匹配。' }
+} else {
+    $qemuTar = Get-VerifiedGitArchive $dependencies.qemuSource $DependencyCache
+}
 $suffix = if ($Release) { '' } elseif ($Sign) { '-test-signed' } else { '-unsigned' }
-$artifact = Join-Path $OutputDirectory "Cage-$version-windows-amd64-setup$suffix.exe"
+$artifact = Join-Path $OutputDirectory "GeminiCage-$version-windows-amd64-setup$suffix.exe"
 $manifest = Join-Path $AppDirectory 'Cage.install-files.json'
 $files = @(Get-ChildItem -LiteralPath $AppDirectory -File -Recurse -Force | Where-Object FullName -ne $manifest)
 $ownership = [Collections.Generic.List[object]]::new()
@@ -101,22 +108,24 @@ $verifiedCoreSource = Get-VerifiedDependency $dependencies.mihomoSource $Depende
 Copy-Item -LiteralPath $verifiedCoreSource -Destination $coreSource -Force
 Invoke-BuildTool $sevenZip @('t', '-bso0', '-bsp0', $coreSource)
 $releaseFiles = @($artifact, $coreSource)
-$qemuSource = Join-Path $OutputDirectory ($dependencies.qemuSource.file + '.gz')
-if (Test-Path -LiteralPath $qemuSource) { Remove-Item -LiteralPath $qemuSource }
-Invoke-BuildTool $sevenZip @('a', '-tgzip', '-mx=9', '-bso0', '-bsp0', $qemuSource, $qemuTar)
-Invoke-BuildTool $sevenZip @('t', '-bso0', '-bsp0', $qemuSource)
-$releaseFiles += $qemuSource
-if (Test-Path (Join-Path $qemuRuntime 'cage-build.json')) {
-    $keymapArchive = Get-VerifiedDependency $dependencies.qemuKeycodemap $DependencyCache
-    $keymapSource = Join-Path $OutputDirectory ('qemu-keycodemapdb-' + $dependencies.qemuKeycodemap.version + '-source.tar.gz')
-    Copy-Item $keymapArchive $keymapSource -Force
-    $changesSource = Join-Path $OutputDirectory ('qemu-' + $dependencies.qemu.version + '-cage-changes-source.tar.gz')
-    $tar = if ($IsWindows) { Join-Path $env:SystemRoot 'System32/tar.exe' } else { 'tar' }
-    Invoke-BuildTool $tar @('-czf', $changesSource, '-C', $repository, 'patches/qemu', 'scripts/build-qemu-windows.ps1',
-        'scripts/build-qemu-windows.sh', '-C', $qemuRuntime, 'cage-build.json', 'build-packages.txt')
-    $releaseFiles += @($keymapSource, $changesSource)
+if (-not $pinnedSources) {
+    $qemuSource = Join-Path $OutputDirectory ($dependencies.qemuSource.file + '.gz')
+    if (Test-Path -LiteralPath $qemuSource) { Remove-Item -LiteralPath $qemuSource }
+    Invoke-BuildTool $sevenZip @('a', '-tgzip', '-mx=9', '-bso0', '-bsp0', $qemuSource, $qemuTar)
+    Invoke-BuildTool $sevenZip @('t', '-bso0', '-bsp0', $qemuSource)
+    $releaseFiles += $qemuSource
+    if (Test-Path (Join-Path $qemuRuntime 'cage-build.json')) {
+        $keymapArchive = Get-VerifiedDependency $dependencies.qemuKeycodemap $DependencyCache
+        $keymapSource = Join-Path $OutputDirectory ('qemu-keycodemapdb-' + $dependencies.qemuKeycodemap.version + '-source.tar.gz')
+        Copy-Item $keymapArchive $keymapSource -Force
+        $changesSource = Join-Path $OutputDirectory ('qemu-' + $dependencies.qemu.version + '-cage-changes-source.tar.gz')
+        $tar = if ($IsWindows) { Join-Path $env:SystemRoot 'System32/tar.exe' } else { 'tar' }
+        Invoke-BuildTool $tar @('-czf', $changesSource, '-C', $repository, 'patches/qemu', 'scripts/build-qemu-windows.ps1',
+            'scripts/build-qemu-windows.sh', '-C', $qemuRuntime, 'cage-build.json', 'build-packages.txt')
+        $releaseFiles += @($keymapSource, $changesSource)
+    }
 }
-if ($Release) {
+if ($Release -or $pinnedSources) {
     $sourceExtension = if ($QemuSourceArchive.EndsWith('.tar.gz', [StringComparison]::OrdinalIgnoreCase)) { '.tar.gz' } else { [IO.Path]::GetExtension($QemuSourceArchive) }
     $qemuSourceTarget = Join-Path $OutputDirectory ('qemu-' + $dependencies.qemu.version + '-windows-full-source' + $sourceExtension)
     Copy-Item -LiteralPath $QemuSourceArchive -Destination $qemuSourceTarget -Force

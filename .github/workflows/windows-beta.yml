@@ -1,0 +1,57 @@
+name: Windows x64 安装包与共存测试
+on:
+  workflow_dispatch:
+  push:
+    branches: [windows-beta]
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: windows-2025
+    timeout-minutes: 100
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: astral-sh/setup-uv@v7
+      - name: 准备安装编译器
+        run: |
+          $nsis = "${env:ProgramFiles(x86)}\NSIS"
+          if (Test-Path "$nsis\makensis.exe") { $nsis >> $env:GITHUB_PATH }
+          else { ./scripts/install-nsis.ps1 -Destination $env:RUNNER_TEMP }
+      - name: 获取并校验基础运行时和对应源码
+        run: |
+          $url = 'https://github.com/Lee-xeo/Claude-Cage/releases/download/v0.1.8'
+          curl.exe -fsSL --retry 3 "$url/Cage-0.1.8-windows-amd64-setup.exe" -o "$env:RUNNER_TEMP/kit.exe"
+          if ($LASTEXITCODE -or (Get-FileHash "$env:RUNNER_TEMP/kit.exe").Hash -ne '4b069b1e82e5d0ed0fd5a718222428679cf392b2b5f3e7e1a8efddc30634f0c4') { throw '基础软件包校验失败' }
+          curl.exe -fsSL --retry 3 "$url/qemu-11.1.0-windows-full-source.tar.gz" -o "$env:RUNNER_TEMP/qemu-source.tar.gz"
+          if ($LASTEXITCODE -or (Get-FileHash "$env:RUNNER_TEMP/qemu-source.tar.gz").Hash -ne '1d519eb607fc4d519b860a65150e7d78941eba19302aa3061574bec316850896') { throw 'QEMU 对应源码校验失败' }
+      - name: 编译 Windows 工作台与安装包
+        run: |
+          ./scripts/build-windows.ps1 -UpstreamInstaller "$env:RUNNER_TEMP/kit.exe"
+          ./scripts/package-windows.ps1 -SkipBuild -QemuSourceArchive "$env:RUNNER_TEMP/qemu-source.tar.gz"
+      - name: 在含 Claude Cage 的 Windows 上验证共存
+        run: |
+          $exe = Get-ChildItem _output/releases/*/windows/GeminiCage-*.exe
+          ./gemini/windows-coexistence.ps1 -Installer $exe.FullName -UpstreamInstaller "$env:RUNNER_TEMP/kit.exe"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GeminiCage-Windows-x64
+          path: _output/releases/*/windows/*
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error

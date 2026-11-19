@@ -126,9 +126,9 @@ func runAgent(args []string, stdin io.Reader, stdout io.Writer, clientOnly bool)
 		if err != nil {
 			return finish(nil, err)
 		}
-		*config = filepath.Join(home, "Library", "GeminiCage", "config.json")
+		*config = filepath.Join(cage.DefaultProfileDir(home), "config.json")
 		if clientOnly {
-			*config = filepath.Join(home, "Library", "GeminiCage", "client", "config.json")
+			*config = filepath.Join(cage.DefaultProfileDir(home), "client", "config.json")
 		}
 	}
 	path, err := filepath.Abs(*config)

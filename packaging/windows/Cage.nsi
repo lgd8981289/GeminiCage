@@ -28,18 +28,18 @@ ManifestSupportedOS all
   !error "OUTPUT_FILE is required"
 !endif
 
-!define APP_ID "io.github.lee-xeo.claude-cage"
-!define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\ClaudeCage"
+!define APP_ID "local.sunday.gemini-cage"
+!define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\GeminiCage"
 !define WEBVIEW2_APP_ID "{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
-Name "Cage ${VERSION}"
+Name "Gemini Cage ${VERSION}"
 OutFile "${OUTPUT_FILE}"
-InstallDir "$LOCALAPPDATA\Programs\Cage"
+InstallDir "$LOCALAPPDATA\Programs\GeminiCage"
 InstallDirRegKey HKCU "${UNINSTALL_KEY}" "InstallLocation"
 VIProductVersion "${VERSION_NUMERIC}"
-VIAddVersionKey /LANG=1033 "ProductName" "Cage"
+VIAddVersionKey /LANG=1033 "ProductName" "Gemini Cage"
 VIAddVersionKey /LANG=1033 "ProductVersion" "${VERSION}"
 VIAddVersionKey /LANG=1033 "FileVersion" "${VERSION}"
-VIAddVersionKey /LANG=1033 "FileDescription" "Cage Windows Installer"
+VIAddVersionKey /LANG=1033 "FileDescription" "Gemini Cage 安装程序"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "Cage contributors"
 
 !ifdef SIGN_SCRIPT
@@ -49,7 +49,7 @@ VIAddVersionKey /LANG=1033 "LegalCopyright" "Cage contributors"
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_RUN "$INSTDIR\Cage.exe"
 !define MUI_FINISHPAGE_RUN_NOTCHECKED
-!define MUI_FINISHPAGE_TEXT "Cage is installed.$\r$\n$\r$\nIf virtualization is unavailable, enable Windows Hypervisor Platform in Windows Features and restart Windows. Your projects and Cage data are preserved during upgrades and uninstall."
+!define MUI_FINISHPAGE_TEXT "Gemini Cage 已安装。$\r$\n$\r$\n启动 Debian 客机前，请在 Windows 功能中启用「Windows 虚拟机监控程序平台」，按系统提示重启。升级和卸载会保留你的项目和环境数据。"
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${APP_DIR}/LICENSE.txt"
 !define MUI_DIRECTORYPAGE_TEXT_TOP "$(CageDirectoryHelp)"
@@ -59,18 +59,12 @@ Page custom ShortcutOptionsPage ShortcutOptionsLeave
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
-!insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_LANGUAGE "SimpChinese"
 
-LangString CageDirectoryHelp ${LANG_ENGLISH} "Choose where to install the Cage application. On first launch, you can choose a separate drive for the Linux image, download cache, and virtual disks before starting the environment."
 LangString CageDirectoryHelp ${LANG_SIMPCHINESE} "请选择 Cage 程序的安装目录。首次打开 Cage 后，可以在启动环境前单独选择存放 Linux 镜像、下载缓存和虚拟磁盘的磁盘。"
-LangString CageShortcutsTitle ${LANG_ENGLISH} "Shortcuts"
 LangString CageShortcutsTitle ${LANG_SIMPCHINESE} "快捷方式"
-LangString CageShortcutsHelp ${LANG_ENGLISH} "Choose where to add Cage shortcuts for your Windows account."
 LangString CageShortcutsHelp ${LANG_SIMPCHINESE} "选择为当前 Windows 用户添加的 Cage 快捷方式。"
-LangString CageDesktopShortcut ${LANG_ENGLISH} "Add a desktop shortcut"
 LangString CageDesktopShortcut ${LANG_SIMPCHINESE} "添加桌面快捷方式"
-LangString CageStartMenuShortcuts ${LANG_ENGLISH} "Add to the Start menu"
 LangString CageStartMenuShortcuts ${LANG_SIMPCHINESE} "添加到开始菜单"
 
 !include "CageInstallerOptions.nsh"
@@ -165,7 +159,7 @@ FunctionEnd
 !macro AcquireInstallationMutex
   ; NSIS and UpdateInstaller both reject an existing named object and keep
   ; their handle until the transaction ends. No caller waits for ownership.
-  System::Call 'kernel32::CreateMutexW(p 0, i 0, w "Global\Cage.Installation") p.r0 ?e'
+  System::Call 'kernel32::CreateMutexW(p 0, i 0, w "Global\GeminiCage.Installation") p.r0 ?e'
   Pop $1
   ${If} $0 == 0
     SetErrorLevel 2
@@ -198,10 +192,10 @@ Function LoadShortcutOptions
   ${If} $0 != ""
     StrCpy $DesktopShortcut 0
     StrCpy $StartMenuShortcuts 0
-    ${If} ${FileExists} "$DESKTOP\Cage.lnk"
+    ${If} ${FileExists} "$DESKTOP\Gemini Cage.lnk"
       StrCpy $DesktopShortcut 1
     ${EndIf}
-    ${If} ${FileExists} "$SMPROGRAMS\Cage\Cage.lnk"
+    ${If} ${FileExists} "$SMPROGRAMS\Gemini Cage\Gemini Cage.lnk"
       StrCpy $StartMenuShortcuts 1
     ${EndIf}
   ${EndIf}
@@ -252,7 +246,7 @@ Function SetDefaultInstallDirectory
   ${EndIf}
   System::Call 'kernel32::GetDriveTypeW(w "D:\") i .r0'
   ${If} $0 == 3
-    StrCpy $INSTDIR "D:\Cage"
+    StrCpy $INSTDIR "D:\GeminiCage"
   ${EndIf}
 FunctionEnd
 
@@ -285,7 +279,7 @@ FunctionEnd
     ${If} $0 == -1
       StrCpy $HelperExit "application_file_in_use"
       SetErrorLevel 2
-      Abort "Quit Cage and stop its environment before installing or uninstalling."
+      Abort "请先停止 Gemini Cage 环境并退出应用，再继续。"
     ${EndIf}
     System::Call 'kernel32::CloseHandle(p r0)'
   ${EndIf}
@@ -313,13 +307,13 @@ Function .onInit
   ${EndIf}
   !insertmacro InstallPhase "initializing"
   ${IfNot} ${IsNativeAMD64}
-    MessageBox MB_ICONSTOP "This Cage package requires an Intel/AMD 64-bit version of Windows. Windows on ARM and 32-bit Windows are not supported."
+    MessageBox MB_ICONSTOP "此安装包适用于搭载 Intel 或 AMD 处理器的 64 位 Windows。"
     SetErrorLevel 1633
     Quit
   ${EndIf}
   ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" "CurrentBuildNumber"
   ${If} $0 < 19045
-    MessageBox MB_ICONSTOP "Cage requires Windows 10 22H2 (build 19045) or Windows 11. Update Windows and try again."
+    MessageBox MB_ICONSTOP "请使用 Windows 10 22H2（19045）或 Windows 11。"
     SetErrorLevel 1633
     Quit
   ${EndIf}
@@ -332,7 +326,7 @@ Function CheckDestination
   ${OrIf} $INSTDIR == $0
   ${OrIf} $INSTDIR == "$0\"
     SetErrorLevel 2
-    Abort "Choose a dedicated application folder."
+    Abort "请选择独立的应用文件夹。"
   ${EndIf}
   StrCpy $ExistingInstall "0"
   IfFileExists "$INSTDIR\Cage.install-id" existing
@@ -355,7 +349,7 @@ Function CheckDestination
     Goto done
   foreign:
     SetErrorLevel 2
-    Abort "The destination contains files from another installation. Choose an empty folder."
+    Abort "所选目录属于其他应用或已有文件。请选择空目录或原来的 Gemini Cage 安装目录。"
   done:
     ClearErrors
 FunctionEnd
@@ -387,7 +381,7 @@ Function RestorePreservedFiles
   ${EndIf}
 FunctionEnd
 
-Section "Cage" Main
+Section "Gemini Cage" Main
   !insertmacro InstallPhase "acquiring_installation_lock"
   !insertmacro AcquireInstallationMutex
   StrCpy $TransactionRecord "$INSTDIR.cage-installation.json"
@@ -415,7 +409,7 @@ Section "Cage" Main
     SetOutPath "$TEMP"
     RMDir /r "$StageDir"
     SetErrorLevel 2
-    Abort "Could not unpack Cage. Check free disk space and folder permissions."
+    Abort "解压 Gemini Cage 失败，请检查可用磁盘空间和目录权限。"
   ${EndIf}
 
   ; Install the bundled offline runtime only when WebView2 is absent.
@@ -428,7 +422,7 @@ Section "Cage" Main
   ${OrIf} $0 == "0.0.0.0"
     ${If} $1 == ""
     ${OrIf} $1 == "0.0.0.0"
-      DetailPrint "Installing the bundled Microsoft WebView2 runtime..."
+      DetailPrint "正在安装 Microsoft WebView2 运行时…"
       !insertmacro InstallPhase "installing_webview_runtime"
       ExecWait '"$StageDir\resources\runtime\MicrosoftEdgeWebView2RuntimeInstallerX64.exe" /silent /install' $0
       StrCpy $HelperExit $0
@@ -437,7 +431,7 @@ Section "Cage" Main
         SetOutPath "$TEMP"
         RMDir /r "$StageDir"
         SetErrorLevel 2
-        Abort "Microsoft WebView2 installation failed ($0). Install the runtime and retry."
+        Abort "WebView2 安装失败（$0），请安装运行时后重试。"
       ${EndIf}
     ${EndIf}
   ${EndIf}
@@ -486,7 +480,7 @@ Section "Cage" Main
       Pop $1
       RMDir /r "$StageDir"
       SetErrorLevel 2
-      Abort "Could not move the installed application. Quit Cage, close programs using files in its folder, and retry."
+      Abort "无法移动已有应用，请退出 Gemini Cage 并关闭占用安装目录的程序后重试。"
     ${EndIf}
     DetailPrint "正在迁入个人文件并保留原有链接…"
     !insertmacro InstallPhase "moving_personal_files"
@@ -527,7 +521,7 @@ Section "Cage" Main
     ${EndIf}
     RMDir /r "$StageDir"
     SetErrorLevel 2
-    Abort "Could not install Cage. The previous installation has been restored."
+    Abort "安装失败，已恢复原来的 Gemini Cage。"
   ${EndIf}
   ${If} $BackupDir != ""
     !insertmacro InstallPhase "cleaning_previous_application"
@@ -556,9 +550,9 @@ Section "Cage" Main
     ${EndIf}
   ${EndIf}
   !insertmacro InstallPhase "registering_installation"
-  WriteRegStr HKCU "${UNINSTALL_KEY}" "DisplayName" "Cage"
+  WriteRegStr HKCU "${UNINSTALL_KEY}" "DisplayName" "Gemini Cage"
   WriteRegStr HKCU "${UNINSTALL_KEY}" "DisplayVersion" "${VERSION}"
-  WriteRegStr HKCU "${UNINSTALL_KEY}" "Publisher" "Cage contributors"
+  WriteRegStr HKCU "${UNINSTALL_KEY}" "Publisher" "GeminiCage contributors"
   WriteRegStr HKCU "${UNINSTALL_KEY}" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "${UNINSTALL_KEY}" "UninstallString" '$\"$INSTDIR\Uninstall.exe$\"'
   WriteRegStr HKCU "${UNINSTALL_KEY}" "QuietUninstallString" '$\"$INSTDIR\Uninstall.exe$\" /S'
@@ -567,18 +561,18 @@ Section "Cage" Main
   WriteRegDWORD HKCU "${UNINSTALL_KEY}" "NoRepair" 1
   SetOutPath "$INSTDIR"
   ${If} $DesktopShortcut == 1
-    CreateShortcut "$DESKTOP\Cage.lnk" "$INSTDIR\Cage.exe"
+    CreateShortcut "$DESKTOP\Gemini Cage.lnk" "$INSTDIR\Cage.exe"
   ${Else}
-    Delete "$DESKTOP\Cage.lnk"
+    Delete "$DESKTOP\Gemini Cage.lnk"
   ${EndIf}
   ${If} $StartMenuShortcuts == 1
-    CreateDirectory "$SMPROGRAMS\Cage"
-    CreateShortcut "$SMPROGRAMS\Cage\Cage.lnk" "$INSTDIR\Cage.exe"
-    CreateShortcut "$SMPROGRAMS\Cage\Uninstall Cage.lnk" "$INSTDIR\Uninstall.exe"
+    CreateDirectory "$SMPROGRAMS\Gemini Cage"
+    CreateShortcut "$SMPROGRAMS\Gemini Cage\Gemini Cage.lnk" "$INSTDIR\Cage.exe"
+    CreateShortcut "$SMPROGRAMS\Gemini Cage\卸载 Gemini Cage.lnk" "$INSTDIR\Uninstall.exe"
   ${Else}
-    Delete "$SMPROGRAMS\Cage\Cage.lnk"
-    Delete "$SMPROGRAMS\Cage\Uninstall Cage.lnk"
-    RMDir "$SMPROGRAMS\Cage"
+    Delete "$SMPROGRAMS\Gemini Cage\Gemini Cage.lnk"
+    Delete "$SMPROGRAMS\Gemini Cage\卸载 Gemini Cage.lnk"
+    RMDir "$SMPROGRAMS\Gemini Cage"
   ${EndIf}
   WriteRegDWORD HKCU "${UNINSTALL_KEY}" "DesktopShortcut" $DesktopShortcut
   WriteRegDWORD HKCU "${UNINSTALL_KEY}" "StartMenuShortcuts" $StartMenuShortcuts
@@ -605,7 +599,7 @@ Function un.onInit
     StrCpy $HelperExit "identity_mismatch"
     Call un.WriteInstallDiagnostic
     SetErrorLevel 2
-    Abort "This is not a Cage installation folder."
+    Abort "目录没有 Gemini Cage 安装标识，已停止卸载。"
   ${EndIf}
   !insertmacro UninstallPhase "checking_stopped_processes"
   !insertmacro CheckStopped "Cage.exe"
@@ -644,10 +638,10 @@ Section "Uninstall"
     Abort "部分程序文件正在使用或无法读取，卸载未完成。个人文件已保留，请关闭占用程序后重试。"
   ${EndIf}
   !insertmacro UninstallPhase "removing_shortcuts_and_registration"
-  Delete "$DESKTOP\Cage.lnk"
-  Delete "$SMPROGRAMS\Cage\Cage.lnk"
-  Delete "$SMPROGRAMS\Cage\Uninstall Cage.lnk"
-  RMDir "$SMPROGRAMS\Cage"
+  Delete "$DESKTOP\Gemini Cage.lnk"
+  Delete "$SMPROGRAMS\Gemini Cage\Gemini Cage.lnk"
+  Delete "$SMPROGRAMS\Gemini Cage\卸载 Gemini Cage.lnk"
+  RMDir "$SMPROGRAMS\Gemini Cage"
   DeleteRegKey HKCU "${UNINSTALL_KEY}"
   !insertmacro UninstallPhase "removing_install_directory"
   RMDir "$INSTDIR"

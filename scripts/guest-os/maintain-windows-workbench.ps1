@@ -105,7 +105,7 @@ foreach ($entry in $manifest.files) {
 # The native host helper is part of the same checked component package. Update
 # its fixed-VM service during the existing administrator-authorized maintenance.
 # The protected registration supplies the original host user across UAC.
-$managerBindingPath=Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) ('Cage\HyperVManager\'+$vm.Id.ToString('D')+'\binding.json')
+$managerBindingPath=Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) ('GeminiCage\HyperVManager\'+$vm.Id.ToString('D')+'\binding.json')
 $managerBindingFile=Get-Item -LiteralPath $managerBindingPath -Force
 if ($managerBindingFile.Attributes -band [IO.FileAttributes]::ReparsePoint -or $managerBindingFile.Length -gt 65536) { throw 'Windows 管理助手的登记文件无法核验。' }
 $managerBinding=Get-Content -LiteralPath $managerBindingPath -Raw -Encoding UTF8 | ConvertFrom-Json

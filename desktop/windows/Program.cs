@@ -30,22 +30,22 @@ internal static class Program
         ApplicationConfiguration.Initialize();
         if (RuntimeInformation.OSArchitecture != Architecture.X64 || Environment.OSVersion.Version.Build < 19045)
         {
-            MessageBox.Show("Cage 需要 Windows 10 22H2（19045）或 Windows 11，x64（Intel/AMD）系统。", "Cage");
+            MessageBox.Show("Cage 需要 Windows 10 22H2（19045）或 Windows 11，x64（Intel/AMD）系统。", "Gemini Cage");
             return 1;
         }
         var sid = WindowsIdentity.GetCurrent().User?.Value ?? Environment.UserName;
         var key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(sid + "\0" + Path.GetFullPath(Backend.Root).TrimEnd(Path.DirectorySeparatorChar).ToUpperInvariant())))[..24];
-        using var mutex = new Mutex(true, @"Local\Cage-" + key, out var owner);
+        using var mutex = new Mutex(true, @"Local\GeminiCage-" + key, out var owner);
         if (!owner)
         {
             if (SmokeOutput != null) return 3;
             try
             {
-                using var client = new NamedPipeClientStream(".", "Cage-" + key, PipeDirection.Out, PipeOptions.CurrentUserOnly);
+                using var client = new NamedPipeClientStream(".", "GeminiCage-" + key, PipeDirection.Out, PipeOptions.CurrentUserOnly);
                 client.Connect(3000); client.WriteByte(1);
             }
-            catch (IOException) { MessageBox.Show("Cage 已在运行，但窗口暂时无法唤起。请从任务栏打开 Cage。", "Cage"); }
-            catch (TimeoutException) { MessageBox.Show("Cage 正在启动，请稍候。", "Cage"); }
+            catch (IOException) { MessageBox.Show("Cage 已在运行，但窗口暂时无法唤起。请从任务栏打开 Cage。", "Gemini Cage"); }
+            catch (TimeoutException) { MessageBox.Show("Cage 正在启动，请稍候。", "Gemini Cage"); }
             return 0;
         }
         using var form = new MainWindow();
@@ -56,7 +56,7 @@ internal static class Program
             {
                 try
                 {
-                    await using var pipe = new NamedPipeServerStream("Cage-" + key, PipeDirection.In, 1,
+                    await using var pipe = new NamedPipeServerStream("GeminiCage-" + key, PipeDirection.In, 1,
                         PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
                     await pipe.WaitForConnectionAsync(cancellation.Token);
                     var data = new byte[1];

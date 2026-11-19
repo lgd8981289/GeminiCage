@@ -99,7 +99,7 @@ func TestWindowsHostManagerOrdinaryRead(t *testing.T) {
 
 	request := func(t *testing.T, body string, expected string) {
 		t.Helper()
-		conn, err := winio.DialPipeAccessImpLevel(ctx, `\\.\pipe\Cage.HyperV.`+id.String(), 0x120003, winio.PipeImpLevelIdentification)
+		conn, err := winio.DialPipeAccessImpLevel(ctx, `\\.\pipe\GeminiCage.HyperV.`+id.String(), 0x120003, winio.PipeImpLevelIdentification)
 		if err != nil {
 			t.Fatal(err)
 		}

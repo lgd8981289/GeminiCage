@@ -8,7 +8,7 @@ internal sealed class MainWindow : Form
 {
     private WebView2 web = new() { Dock = DockStyle.Fill, Visible = false };
     private readonly NativeInput nativeInput;
-    private readonly Label message = new() { AutoSize = true, MaximumSize = new Size(720, 0), Text = "正在启动 Cage 工作台…", Margin = new Padding(12) };
+    private readonly Label message = new() { AutoSize = true, MaximumSize = new Size(720, 0), Text = "正在启动 Gemini Cage 工作台…", Margin = new Padding(12) };
     private readonly FlowLayoutPanel status = new() { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(48), WrapContents = false };
     private readonly Button retry = new() { Text = "重试连接", AutoSize = true, Visible = false };
     private readonly Button existing = new() { Text = "打开现有环境保存文件", AutoSize = true, Visible = false };
@@ -27,7 +27,7 @@ internal sealed class MainWindow : Form
         nativeInput = new NativeInput(value => Script("window.dispatchEvent(new CustomEvent('cage-native-input',{detail:" + JsonSerializer.Serialize(value) + "}));"));
         Deactivate += (_, _) => Script("window.dispatchEvent(new Event('cage-window-deactivated'));");
         AutoScaleMode = AutoScaleMode.Dpi; AutoScaleDimensions = new SizeF(96, 96);
-        Text = "Cage";
+        Text = "Gemini Cage";
         StartPosition = FormStartPosition.CenterScreen; BackColor = Color.FromArgb(247, 247, 247);
         Icon = Icon.ExtractAssociatedIcon(Environment.ProcessPath!) ?? SystemIcons.Application;
         status.Controls.AddRange([message, retry, existing, complete]);
@@ -41,13 +41,13 @@ internal sealed class MainWindow : Form
             if (ConfirmStop()) await Bootstrap("--complete-update");
         };
         var trayMenu = new TrayMenu();
-        trayMenu.Items.Add("打开 Cage", null, (_, _) => RestoreWindow());
+        trayMenu.Items.Add("打开 Gemini Cage", null, (_, _) => RestoreWindow());
         trayMenu.Items.Add("检查应用更新…", null, (_, _) => updater!.Handle("check"));
-        trayMenu.Items.Add("关于 Cage", null, (_, _) => MessageBox.Show(this, $"Cage {AppUpdater.Version}\n本机隔离编码工作区", "关于 Cage"));
+        trayMenu.Items.Add("关于 Gemini Cage", null, (_, _) => MessageBox.Show(this, $"Gemini Cage {AppUpdater.Version}\n本机隔离编码工作区", "关于 Gemini Cage"));
         trayMenu.Items.Add(new ToolStripSeparator());
-        trayMenu.Items.Add("退出 Cage…", null, (_, _) => RequestQuit());
+        trayMenu.Items.Add("退出 Gemini Cage…", null, (_, _) => RequestQuit());
         trayMenu.Opening += (_, _) => (chrome ?? new WindowChrome(BackColor, ForeColor, false)).ApplyMenu(trayMenu);
-        tray = new NotifyIcon { Icon = Icon, Text = "Cage", Visible = true, ContextMenuStrip = trayMenu };
+        tray = new NotifyIcon { Icon = Icon, Text = "Gemini Cage", Visible = true, ContextMenuStrip = trayMenu };
         tray.DoubleClick += (_, _) => RestoreWindow();
         updater = new AppUpdater(PublishUpdate, () => { allowQuit = true; Close(); }, () => _ = Bootstrap());
         Shown += async (_, _) => {
@@ -200,7 +200,7 @@ internal sealed class MainWindow : Form
         }
         catch (WebView2RuntimeNotFoundException)
         {
-            Error("缺少 Microsoft Edge WebView2 Runtime。请运行 Cage 安装程序安装随附运行时后重试。");
+            Error("缺少 Microsoft Edge WebView2 Runtime。请运行 Gemini Cage 安装程序安装随附运行时后重试。");
             webFailed = true;
         }
         catch (Exception error) { webFailed = true; Error("无法初始化工作台：" + error.Message); }
@@ -308,7 +308,7 @@ internal sealed class MainWindow : Form
             }
             var entry = UpdatePolicy.Entry(data.Text("url")); expectedPort = entry.Port;
             smokePhase = "loading_workbench";
-            Text = controllerNeedsUpdate ? "Cage（更新待完成）" : "Cage";
+            Text = controllerNeedsUpdate ? "Gemini Cage（更新待完成）" : "Gemini Cage";
             web.CoreWebView2.Navigate(entry.AbsoluteUri);
         }
         catch (OperationCanceledException) { if (!lifetime.IsCancellationRequested) Error("启动工作台失败：等待本机后台响应超时。请点击“重试连接”；仍失败时请保留此提示并反馈给维护者。"); }
@@ -482,8 +482,8 @@ internal sealed class MainWindow : Form
                     break;
                 case "appReference":
                     var appReference = request.Text("kind") switch {
-                        "source" => "https://github.com/Lee-xeo/Claude-Cage/commits/main",
-                        "releases" => "https://github.com/Lee-xeo/Claude-Cage/releases",
+                        "source" => "https://github.com/lgd8981289/GeminiCage/commits/main",
+                        "releases" => "https://github.com/lgd8981289/GeminiCage/releases",
                         _ => throw new InvalidDataException("未知的项目页面")
                     };
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(appReference) { UseShellExecute = true });

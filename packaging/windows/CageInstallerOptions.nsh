@@ -15,7 +15,7 @@ Function ParseCageInstallOptions
   System::Call 'kernel32::GetCommandLineW() p .r0'
   System::Call 'kernel32::lstrlenW(p r0) i .r1'
   ${If} $1 >= ${NSIS_MAX_STRLEN}
-    StrCpy $CageOptionError "The installer command line is too long."
+    StrCpy $CageOptionError "安装参数过长。"
     Return
   ${EndIf}
   System::Call 'kernel32::GetCommandLineW() w .r0'
@@ -77,7 +77,7 @@ Function ParseCageInstallOptions
       IntOp $1 $1 + 1
     ${Loop}
     ${If} $4 != 0
-      StrCpy $CageOptionError "An installer argument has an unclosed quote."
+      StrCpy $CageOptionError "安装参数缺少结束引号。"
       Return
     ${EndIf}
     ${If} $2 == 1
@@ -95,14 +95,14 @@ Function ParseCageInstallOptions
         StrCpy $DesktopShortcut $5 "" 17
         ${If} $DesktopShortcut != "0"
         ${AndIf} $DesktopShortcut != "1"
-          StrCpy $CageOptionError "DESKTOPSHORTCUT must be 0 or 1."
+          StrCpy $CageOptionError "DESKTOPSHORTCUT 必须为 0 或 1。"
           Return
         ${EndIf}
       ${ElseIf} $7 == "/STARTMENUSHORTCUT="
         StrCpy $StartMenuShortcuts $5 "" 19
         ${If} $StartMenuShortcuts != "0"
         ${AndIf} $StartMenuShortcuts != "1"
-          StrCpy $CageOptionError "STARTMENUSHORTCUT must be 0 or 1."
+          StrCpy $CageOptionError "STARTMENUSHORTCUT 必须为 0 或 1。"
           Return
         ${EndIf}
       ${ElseIf} $8 == "/DIAGNOSTICS="
@@ -112,11 +112,11 @@ Function ParseCageInstallOptions
         ${If} $6 == "/D="
           Goto invalid_directory
         ${EndIf}
-        StrCpy $CageOptionError "Unknown installer option. Quote diagnostic paths containing spaces."
+        StrCpy $CageOptionError "安装参数无效，请用引号括起含空格的诊断路径。"
         Return
       ${EndIf}
     ${EndIf}
   ${Loop}
   invalid_directory:
-    StrCpy $CageOptionError "/D= must be the last option. Give an unquoted absolute Windows path with backslashes, such as /D=D:\Cage Builds\Cage."
+    StrCpy $CageOptionError "请将 /D= 放在最后，使用不带引号的 Windows 绝对路径，例如 /D=D:\GeminiCage。"
 FunctionEnd

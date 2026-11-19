@@ -31,12 +31,12 @@ function Protect-ManagerPath([string]$Path,[switch]$Shared){
 $payload=Get-Item -LiteralPath $PayloadExecutable
 if($payload -isnot [IO.FileInfo]){throw 'Select the built manager executable.'};Assert-NoLink $payload.FullName
 if((Get-FileHash $payload.FullName -Algorithm SHA256).Hash.ToLowerInvariant() -cne $PayloadSHA256.ToLowerInvariant()){throw 'Manager payload checksum does not match.'}
-$programRoot=Join-Path ([Environment]::GetFolderPath('ProgramFiles')) 'Cage Host Manager'
+$programRoot=Join-Path ([Environment]::GetFolderPath('ProgramFiles')) 'GeminiCage Host Manager'
 $program=Join-Path $programRoot $VMId.ToString('D');$exe=Join-Path $program 'Cage.HyperVManager.exe'
-$cageDataRoot=Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'Cage'
+$cageDataRoot=Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'GeminiCage'
 $dataRoot=Join-Path $cageDataRoot 'HyperVManager'
 $data=Join-Path $dataRoot $VMId.ToString('D');$bindingPath=Join-Path $data 'binding.json'
-$name='CageHV-'+$VMId.ToString('D');$binary='"'+$exe+'" service --binding "'+$bindingPath+'"'
+$name='GeminiCageHV-'+$VMId.ToString('D');$binary='"'+$exe+'" service --binding "'+$bindingPath+'"'
 if(!$PSCmdlet.ShouldProcess($VMId,'Install the protected local fixed-VM manager; keep VM, disks, accounts and host networking')){return}
 foreach($path in @($programRoot,$program,$cageDataRoot,$dataRoot,$data)){
     if(!(Test-Path -LiteralPath $path)){New-Item -ItemType Directory -Path $path|Out-Null};Assert-NoLink $path

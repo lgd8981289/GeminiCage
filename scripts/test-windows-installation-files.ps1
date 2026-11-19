@@ -35,7 +35,7 @@ function Remove-TestTree([string]$Path) {
     }
 }
 function App([string]$Path, [string]$Version) {
-    Write-File (Join-Path $Path 'Cage.install-id') 'io.github.lee-xeo.claude-cage'
+    Write-File (Join-Path $Path 'Cage.install-id') 'local.sunday.gemini-cage'
     Write-File (Join-Path $Path 'program.txt') $Version
     Write-File (Join-Path $Path 'resources/customizable.txt') ('default-' + $Version)
     Write-File (Join-Path $Path 'Uninstall.exe') ('uninstaller-' + $Version)

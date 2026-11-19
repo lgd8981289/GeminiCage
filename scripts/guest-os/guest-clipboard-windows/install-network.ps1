@@ -52,7 +52,7 @@ try {
             if((Get-FileHash -LiteralPath (Join-Path $program 'wintun.dll') -Algorithm SHA256).Hash -cne 'E5DA8447DC2C320EDC0FC52FA01885C103DE8C118481F683643CACC3220DAFCE'){throw 'Guest Wintun transfer digest differs.'}
         }
         Add-Type -AssemblyName System.Security
-        $entropy=[Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes("Cage.HyperV.v1:$($vm.Id.ToString('D')):$($binding.gui_user_sid)"))
+        $entropy=[Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes("GeminiCage.HyperV.v1:$($vm.Id.ToString('D')):$($binding.gui_user_sid)"))
         $pair=Join-Path ([IO.Path]::GetDirectoryName($ProfilePath)) 'packet.dpapi';if(Test-Path -LiteralPath $pair){throw 'A host packet pairing already exists.'}
         if(!$HostEnrollment){[IO.File]::WriteAllBytes($pair,[Security.Cryptography.ProtectedData]::Protect($secret,$entropy,'CurrentUser'));Set-Acl -LiteralPath $pair -AclObject (Get-Acl -LiteralPath $binding.pairing_file)}
         $service='f4a4c1ce-3c9f-49f1-b7bf-82df6592c0fb';$key="HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization\GuestCommunicationServices\$service"

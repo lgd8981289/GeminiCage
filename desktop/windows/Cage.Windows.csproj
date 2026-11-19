@@ -11,6 +11,8 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <AssemblyName>Cage</AssemblyName>
+    <Product>Gemini Cage</Product>
+    <AssemblyTitle>Gemini Cage</AssemblyTitle>
     <RootNamespace>Cage.Windows</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

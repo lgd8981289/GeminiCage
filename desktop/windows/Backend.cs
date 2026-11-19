@@ -9,7 +9,7 @@ internal static class Backend
     public static bool ClientOnly => File.Exists(Path.Combine(AppContext.BaseDirectory, "resources", "client-only"));
     private static string ConfigPath => Path.GetFullPath(
         Environment.GetEnvironmentVariable("GEMINI_CAGE_CONFIG") is { Length: > 0 } configured
-            ? configured : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude-cage", ClientOnly ? "client" : "", "config.json"));
+            ? configured : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".gemini-cage", ClientOnly ? "client" : "", "config.json"));
     public static string Root => Path.GetDirectoryName(ConfigPath)!;
     public static string Executable => Path.Combine(AppContext.BaseDirectory, "resources", "cage.exe");
 

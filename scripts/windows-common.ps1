@@ -137,7 +137,7 @@ function Assert-WindowsWorkbench {
     $start = [Diagnostics.ProcessStartInfo]::new((Join-Path $AppDirectory 'Cage.exe'))
     $start.UseShellExecute = $false
     $start.WorkingDirectory = $AppDirectory
-    $start.Environment['CLAUDE_CAGE_CONFIG'] = Join-Path $testRoot 'profile/config.json'
+    $start.Environment['GEMINI_CAGE_CONFIG'] = Join-Path $testRoot 'profile/config.json'
     $start.ArgumentList.Add('--smoke-test')
     $start.ArgumentList.Add($report)
     $window = [Diagnostics.Process]::Start($start)
@@ -159,7 +159,7 @@ function Assert-WindowsWorkbench {
                 $cleanup.CreateNoWindow = $true
                 $cleanup.RedirectStandardOutput = $true
                 $cleanup.RedirectStandardError = $true
-                $cleanup.Environment['CLAUDE_CAGE_CONFIG'] = Join-Path $testRoot 'profile/config.json'
+                $cleanup.Environment['GEMINI_CAGE_CONFIG'] = Join-Path $testRoot 'profile/config.json'
                 $cleanup.ArgumentList.Add('prepare-update'); $cleanup.ArgumentList.Add('--json')
                 $controller = [Diagnostics.Process]::Start($cleanup)
                 try {

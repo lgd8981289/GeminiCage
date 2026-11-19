@@ -94,7 +94,7 @@ try {
         $null=New-Item -ItemType Directory -Path $profile;Set-Acl -LiteralPath $profile -AclObject $acl
         foreach($entry in (Get-ChildItem -LiteralPath $payload.FullName -File)){Copy-Item -LiteralPath $entry.FullName -Destination (Join-Path $profile $entry.Name)}
         Add-Type -AssemblyName System.Security
-        $entropy=[Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes("Cage.HyperV.v1:$($VMId.ToString('D')):$GUIUserSID"))
+        $entropy=[Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes("GeminiCage.HyperV.v1:$($VMId.ToString('D')):$GUIUserSID"))
         $pairing=Join-Path $profile 'pairing.dpapi'
         # The relay verifies protected file ACLs independently before decrypting.
         $fileACL=[Security.AccessControl.FileSecurity]::new();$fileACL.SetAccessRuleProtection($true,$false);$fileACL.SetOwner($hostOwner)

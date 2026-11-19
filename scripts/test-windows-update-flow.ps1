@@ -89,7 +89,7 @@ function Build-Package([string]$Version) {
     Sign (Join-Path $app 'Cage.exe')
     [IO.Directory]::CreateDirectory((Join-Path $app 'resources')) | Out-Null
     Copy-Item -LiteralPath (Join-Path $app 'Cage.exe') -Destination (Join-Path $app 'resources/cage.exe')
-    Write-Text (Join-Path $app 'Cage.install-id') 'io.github.lee-xeo.claude-cage'
+    Write-Text (Join-Path $app 'Cage.install-id') 'local.sunday.gemini-cage'
     Write-Text (Join-Path $app 'version.txt') $Version
     Write-Text (Join-Path $app 'LICENSE.txt') 'Isolated updater transaction fixture; not a Cage distribution.'
     $files = @(Get-ChildItem -LiteralPath $app -File -Recurse | ForEach-Object {

@@ -35,10 +35,10 @@ internal sealed class AppUpdater : IDisposable
 
     public Dictionary<string, object?> Handle(string operation)
     {
-        if (Backend.ClientOnly)
+        if (Backend.ClientOnly || Version.Contains("-beta.", StringComparison.Ordinal))
         {
             if (state["phase"] as string != "manual" || operation != "status")
-                Change("manual", "轻量客户端使用独立安装包更新；连接配置会保留，云端任务不受影响。");
+                Change("manual", "请从 GeminiCage 的 GitHub 发行页下载新版安装包。");
             return new(state);
         }
         if (operation is "check" or "install" &&

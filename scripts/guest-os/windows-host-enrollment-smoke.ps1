@@ -48,7 +48,7 @@ try {
     $passed=Get-Content -LiteralPath $result -Raw -Encoding UTF8|ConvertFrom-Json
     if(!$passed.sameCipher -or !$passed.changedKeyRejected -or !$passed.guestChangedRejected -or !$passed.cipherPreserved){throw 'Native enrollment mutation guards failed.'}
     Add-Type -AssemblyName System.Security
-    $entropy=[Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes('Cage.HyperV.v1:'+$vm.ToString('D')+':S-1-5-21-111-222-333-1001'))
+    $entropy=[Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes('GeminiCage.HyperV.v1:'+$vm.ToString('D')+':S-1-5-21-111-222-333-1001'))
     $raw=[Security.Cryptography.ProtectedData]::Unprotect([IO.File]::ReadAllBytes((Join-Path $pair 'pairing.dpapi')),$entropy,'CurrentUser')
     try{if(($raw -join ',') -cne (([byte[]](1..32)) -join ',')){throw 'Original user DPAPI interoperability failed.'}}finally{[Array]::Clear($raw,0,$raw.Length)}
     if(Test-Path -LiteralPath (Join-Path $profile 'windows-guest.json')){throw 'A fixture without actual VM/GUI proof published a final profile.'}

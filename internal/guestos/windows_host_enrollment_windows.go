@@ -213,7 +213,7 @@ func cryptHostEnrollment(data []byte, vm uuid.UUID, sid string, protect bool) ([
 	input := make([]byte, len(data))
 	copy(input, data)
 	defer clear(input)
-	entropy := sha256.Sum256([]byte("Cage.HyperV.v1:" + vm.String() + ":" + sid))
+	entropy := sha256.Sum256([]byte("GeminiCage.HyperV.v1:" + vm.String() + ":" + sid))
 	in := windows.DataBlob{Size: uint32(len(input)), Data: &input[0]}
 	salt := windows.DataBlob{Size: 32, Data: &entropy[0]}
 	var output windows.DataBlob

@@ -59,7 +59,7 @@ cage diagnostics --json PATH.zip   导出脱敏诊断包
 cage version       显示核心版本；用 --min VERSION 检查是否达到最低版本
 cage licenses      显示第三方许可声明
 
-配置路径：~/Library/GeminiCage/config.json，可通过 GEMINI_CAGE_CONFIG 指定其他路径。
+macOS 配置位于 ~/Library/GeminiCage，Windows 位于用户目录的 .gemini-cage。可用 GEMINI_CAGE_CONFIG 指定配置文件。
 每个配置目录对应一个独立环境。客机只能访问已授权的项目文件夹，主机登录凭据不会自动导入。
 `
 
@@ -166,7 +166,7 @@ func run() int {
 	path := os.Getenv(cage.ConfigEnv)
 	if path == "" {
 		home, _ := os.UserHomeDir()
-		path = filepath.Join(home, "Library", "GeminiCage", "config.json")
+		path = filepath.Join(cage.DefaultProfileDir(home), "config.json")
 	}
 	path, err := filepath.Abs(path)
 	if err != nil {

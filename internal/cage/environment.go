@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/sylvinus/agent-vm/internal/paths"
@@ -32,12 +33,20 @@ func LoadEnvironmentRecord(profile string) (EnvironmentRecord, error) {
 	return saved, nil
 }
 
+// DefaultProfileDir is shared by the desktop, CLI and agent entry points.
+func DefaultProfileDir(home string) string {
+	if runtime.GOOS == "windows" {
+		return filepath.Join(home, ".gemini-cage")
+	}
+	return filepath.Join(home, "Library", "GeminiCage")
+}
+
 // DefaultEnvironmentDir keeps download transfers outside the default profile,
 // including independent profiles stored below that profile's directory.
 func DefaultEnvironmentDir(profile string) string {
 	path := filepath.Clean(profile) + "-downloads"
 	if home, err := os.UserHomeDir(); err == nil {
-		defaultProfile := filepath.Join(home, "Library", "GeminiCage")
+		defaultProfile := DefaultProfileDir(home)
 		transferRoot := filepath.Join(home, "Documents", "GeminiCage", "Downloads")
 		if paths.Equal(profile, defaultProfile) {
 			path = transferRoot

@@ -4,6 +4,7 @@ param(
     [switch]$Release,
     [switch]$Sign,
     [switch]$SkipUI,
+    [string]$UpstreamInstaller,
     [string]$OutputDirectory,
     [string]$DependencyCache
 )
@@ -14,7 +15,8 @@ if (-not $DependencyCache) { $DependencyCache = Join-Path $repository '_output/w
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 if (Test-Path -LiteralPath (Join-Path $OutputDirectory 'Uninstall.exe')) { throw 'Do not build over an installed application. Choose a separate output directory and use the installer to upgrade.' }
 Assert-WindowsWorkbenchTestBase
-$version = Get-CageVersion $repository
+$coreVersion = Get-CageVersion $repository
+$version = (Get-Content (Join-Path $repository 'gemini/windows-version.txt') -Raw).Trim()
 $signed = $Release -or $Sign
 if ($signed) { Assert-WindowsSigningConfiguration }
 $requiredTools = [ordered]@{
@@ -55,7 +57,14 @@ try {
         } finally { Pop-Location }
     }
     $qemuBuilt = Join-Path $DependencyCache 'qemu-cage'
-    & (Join-Path $PSScriptRoot 'build-qemu-windows.ps1') -DependencyCache $DependencyCache -OutputDirectory $qemuBuilt
+    if ($UpstreamInstaller) {
+        if ($signed) { throw '上游运行时仅用于手动安装的测试版。' }
+        $kit = Join-Path $stage 'kit'
+        if ((Get-FileHash -LiteralPath $UpstreamInstaller).Hash -ne '4b069b1e82e5d0ed0fd5a718222428679cf392b2b5f3e7e1a8efddc30634f0c4') { throw '上游 Windows 0.1.8 安装包校验失败。' }
+        Invoke-BuildTool $sevenZip @('x', '-y', '-bso0', "-o$kit", $UpstreamInstaller, 'resources/runtime/*', 'resources/mihomo.exe', 'resources/licenses/*')
+    } else {
+        & (Join-Path $PSScriptRoot 'build-qemu-windows.ps1') -DependencyCache $DependencyCache -OutputDirectory $qemuBuilt
+    }
     Invoke-BuildTool $node @('scripts/bundle-cloud-kit.mjs', '--prefetch')
     if (-not $SkipUI) {
         Invoke-BuildTool $tools['npm'] @('--prefix', 'ui', 'ci', '--no-audit', '--no-fund')
@@ -106,7 +115,7 @@ try {
     $env:GOARCH = 'amd64'
     $env:GOOS = 'windows'
     $tags = 'external_hcs,external_wsl2,yq_noxml,yq_nolua,yq_noini,yq_nohcl,yq_notoml,yq_noprops,yq_nocsv,yq_nouri,yq_nobase64,yq_nosh,yq_noshell'
-    $ldflags = "-s -w -X github.com/sylvinus/agent-vm/internal/version.Version=$version -X github.com/lima-vm/lima/v2/pkg/version.Version=$limaVersion"
+    $ldflags = "-s -w -X github.com/sylvinus/agent-vm/internal/version.Version=$coreVersion -X github.com/sylvinus/agent-vm/internal/version.DistributionVersion=$version -X github.com/lima-vm/lima/v2/pkg/version.Version=$limaVersion"
     Invoke-BuildTool $go @('build', '-trimpath', '-tags', $tags, '-ldflags', $ldflags, '-o', (Join-Path $resources 'cage.exe'), './cmd/cage')
     Invoke-BuildTool (Join-Path $resources 'cage.exe') @('verify-vm-assets')
     Invoke-BuildTool (Join-Path $resources 'cage.exe') @('verify-web-assets')
@@ -114,58 +123,66 @@ try {
         '-p:EnableWindowsTargeting=true', '-p:PublishSingleFile=true', '-p:RestoreLockedMode=true', "-p:Version=$version", "-p:InformationalVersion=$version", '-o', $app)
     Get-ChildItem -LiteralPath $app -File | Where-Object { $_.Extension -in @('.pdb', '.xml') } | Remove-Item -Force
     Invoke-BuildTool $node @('scripts/bundle-cloud-kit.mjs', $resources)
-    $coreArchive = Get-VerifiedDependency $dependencies.mihomo $DependencyCache
-    $core = Join-Path $stage 'mihomo'
-    Expand-BuildArchive $coreArchive $core $sevenZip
-    $coreExe = @(Get-ChildItem -LiteralPath $core -Filter '*.exe' -Recurse)
-    if ($coreExe.Count -ne 1) { throw 'Unexpected Mihomo archive layout.' }
-    Copy-Item -LiteralPath $coreExe[0].FullName -Destination (Join-Path $resources 'mihomo.exe')
-    $sshArchive = Get-VerifiedDependency $dependencies.openssh $DependencyCache
-    $ssh = Join-Path $stage 'openssh'
-    Expand-BuildArchive $sshArchive $ssh $sevenZip
-    $sshTarget = Join-Path $resources 'runtime/openssh'
-    Copy-Item -LiteralPath (Join-Path $ssh 'OpenSSH-Win64') -Destination $sshTarget -Recurse
-    # No SSH service is installed. Only the client is used by Cage/Lima.
-    foreach ($serverFile in @('sshd.exe', 'sshd-session.exe', 'sshd-auth.exe', 'install-sshd.ps1', 'uninstall-sshd.ps1')) {
-        Remove-Item -LiteralPath (Join-Path $sshTarget $serverFile) -Force -ErrorAction SilentlyContinue
+    if ($UpstreamInstaller) {
+        $kitResources = Join-Path $kit 'resources'
+        Copy-Item (Join-Path $kitResources 'runtime/*') (Join-Path $resources 'runtime') -Recurse
+        Copy-Item (Join-Path $kitResources 'mihomo.exe') $resources
+        Copy-Item (Join-Path $kitResources 'licenses') $resources -Recurse
+        Assert-WindowsQemuRuntime (Join-Path $resources 'runtime/qemu') -Firmware
+    } else {
+        $coreArchive = Get-VerifiedDependency $dependencies.mihomo $DependencyCache
+        $core = Join-Path $stage 'mihomo'
+        Expand-BuildArchive $coreArchive $core $sevenZip
+        $coreExe = @(Get-ChildItem -LiteralPath $core -Filter '*.exe' -Recurse)
+        if ($coreExe.Count -ne 1) { throw 'Unexpected Mihomo archive layout.' }
+        Copy-Item -LiteralPath $coreExe[0].FullName -Destination (Join-Path $resources 'mihomo.exe')
+        $sshArchive = Get-VerifiedDependency $dependencies.openssh $DependencyCache
+        $ssh = Join-Path $stage 'openssh'
+        Expand-BuildArchive $sshArchive $ssh $sevenZip
+        $sshTarget = Join-Path $resources 'runtime/openssh'
+        Copy-Item -LiteralPath (Join-Path $ssh 'OpenSSH-Win64') -Destination $sshTarget -Recurse
+        # No SSH service is installed. Only the client is used by Cage/Lima.
+        foreach ($serverFile in @('sshd.exe', 'sshd-session.exe', 'sshd-auth.exe', 'install-sshd.ps1', 'uninstall-sshd.ps1')) {
+            Remove-Item -LiteralPath (Join-Path $sshTarget $serverFile) -Force -ErrorAction SilentlyContinue
+        }
+        $qemuArchive = Get-VerifiedDependency $dependencies.qemu $DependencyCache
+        $qemuTarget = [IO.Path]::GetFullPath((Join-Path $resources 'runtime/qemu'))
+        Expand-BuildArchive $qemuArchive $qemuTarget $sevenZip
+        $runtimeManifest = Get-Content (Join-Path $qemuBuilt 'cage-build.json') -Raw | ConvertFrom-Json
+        $ownedRuntime = @($runtimeManifest.files | ForEach-Object { $_.name }) + @('cage-build.json')
+        foreach ($name in $ownedRuntime) {
+            if ([IO.Path]::GetFileName($name) -ne $name) { throw 'Invalid QEMU runtime manifest path.' }
+            Copy-Item -LiteralPath (Join-Path $qemuBuilt $name) -Destination $qemuTarget -Force
+        }
+        # The two executables above are linked against the built dependency closure.
+        # Vendor DLLs/executables outside that closure have no runtime consumer.
+        Get-ChildItem -LiteralPath $qemuTarget -File -Recurse | Where-Object {
+            $_.Extension -in @('.exe', '.dll') -and ($_.DirectoryName -ne $qemuTarget -or $_.Name -notin $ownedRuntime)
+        } | Remove-Item -Force
+        # Ship the x64 VM only, with its original firmware and notices.
+        Get-ChildItem -LiteralPath (Join-Path $qemuTarget 'share') -File |
+            Where-Object { $_.Name -match '^edk2-(?:aarch64|arm|loongarch64|riscv)-.*\.fd$' } | Remove-Item -Force
+        foreach ($file in @('qemu-system-x86_64.exe', 'qemu-img.exe', 'share/efi-virtio.rom', 'share/kvmvapic.bin')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $qemuTarget $file))) { throw "QEMU archive lacks $file" }
+        }
+        Remove-Item -LiteralPath (Join-Path $qemuTarget '$PLUGINSDIR') -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath (Join-Path $qemuTarget 'qemu-uninstall.exe') -Force -ErrorAction SilentlyContinue
+        $webviewArchive = Get-VerifiedDependency $dependencies.webview2 $DependencyCache
+        Copy-Item -LiteralPath $webviewArchive -Destination (Join-Path $resources 'runtime/MicrosoftEdgeWebView2RuntimeInstallerX64.exe')
+        Invoke-BuildTool $node @('scripts/collect-app-licenses.mjs', (Join-Path $resources 'licenses'))
+        $coreSourceArchive = Get-VerifiedDependency $dependencies.mihomoSource $DependencyCache
+        $coreSource = Join-Path $stage 'mihomo-source'
+        Expand-BuildArchive $coreSourceArchive $coreSource $sevenZip
+        $coreTar = @(Get-ChildItem -LiteralPath $coreSource -Filter '*.tar')
+        if ($coreTar.Count -ne 1) { throw 'Unexpected Mihomo source archive layout.' }
+        Expand-BuildArchive $coreTar[0].FullName $coreSource $sevenZip
+        $coreLicense = Join-Path $coreSource ("mihomo-" + $dependencies.mihomo.version.TrimStart('v') + '/LICENSE')
+        if (-not (Test-Path -LiteralPath $coreLicense -PathType Leaf)) { throw 'Mihomo source license is missing.' }
+        $coreNotices = Join-Path $resources 'licenses/mihomo'
+        New-Item -ItemType Directory -Path $coreNotices -Force | Out-Null
+        Copy-Item -LiteralPath $coreLicense -Destination (Join-Path $coreNotices 'LICENSE')
+        [IO.File]::WriteAllText((Join-Path $coreNotices 'NOTICE'), "Mihomo $($dependencies.mihomo.version), unmodified separate executable.`nSource: $($dependencies.mihomo.source)`nLicense: GPL-3.0; corresponding source accompanies the installer.`n")
     }
-    $qemuArchive = Get-VerifiedDependency $dependencies.qemu $DependencyCache
-    $qemuTarget = [IO.Path]::GetFullPath((Join-Path $resources 'runtime/qemu'))
-    Expand-BuildArchive $qemuArchive $qemuTarget $sevenZip
-    $runtimeManifest = Get-Content (Join-Path $qemuBuilt 'cage-build.json') -Raw | ConvertFrom-Json
-    $ownedRuntime = @($runtimeManifest.files | ForEach-Object { $_.name }) + @('cage-build.json')
-    foreach ($name in $ownedRuntime) {
-        if ([IO.Path]::GetFileName($name) -ne $name) { throw 'Invalid QEMU runtime manifest path.' }
-        Copy-Item -LiteralPath (Join-Path $qemuBuilt $name) -Destination $qemuTarget -Force
-    }
-    # The two executables above are linked against the built dependency closure.
-    # Vendor DLLs/executables outside that closure have no runtime consumer.
-    Get-ChildItem -LiteralPath $qemuTarget -File -Recurse | Where-Object {
-        $_.Extension -in @('.exe', '.dll') -and ($_.DirectoryName -ne $qemuTarget -or $_.Name -notin $ownedRuntime)
-    } | Remove-Item -Force
-    # Ship the x64 VM only, with its original firmware and notices.
-    Get-ChildItem -LiteralPath (Join-Path $qemuTarget 'share') -File |
-        Where-Object { $_.Name -match '^edk2-(?:aarch64|arm|loongarch64|riscv)-.*\.fd$' } | Remove-Item -Force
-    foreach ($file in @('qemu-system-x86_64.exe', 'qemu-img.exe', 'share/efi-virtio.rom', 'share/kvmvapic.bin')) {
-        if (-not (Test-Path -LiteralPath (Join-Path $qemuTarget $file))) { throw "QEMU archive lacks $file" }
-    }
-    Remove-Item -LiteralPath (Join-Path $qemuTarget '$PLUGINSDIR') -Recurse -Force -ErrorAction SilentlyContinue
-    Remove-Item -LiteralPath (Join-Path $qemuTarget 'qemu-uninstall.exe') -Force -ErrorAction SilentlyContinue
-    $webviewArchive = Get-VerifiedDependency $dependencies.webview2 $DependencyCache
-    Copy-Item -LiteralPath $webviewArchive -Destination (Join-Path $resources 'runtime/MicrosoftEdgeWebView2RuntimeInstallerX64.exe')
-    Invoke-BuildTool $node @('scripts/collect-app-licenses.mjs', (Join-Path $resources 'licenses'))
-    $coreSourceArchive = Get-VerifiedDependency $dependencies.mihomoSource $DependencyCache
-    $coreSource = Join-Path $stage 'mihomo-source'
-    Expand-BuildArchive $coreSourceArchive $coreSource $sevenZip
-    $coreTar = @(Get-ChildItem -LiteralPath $coreSource -Filter '*.tar')
-    if ($coreTar.Count -ne 1) { throw 'Unexpected Mihomo source archive layout.' }
-    Expand-BuildArchive $coreTar[0].FullName $coreSource $sevenZip
-    $coreLicense = Join-Path $coreSource ("mihomo-" + $dependencies.mihomo.version.TrimStart('v') + '/LICENSE')
-    if (-not (Test-Path -LiteralPath $coreLicense -PathType Leaf)) { throw 'Mihomo source license is missing.' }
-    $coreNotices = Join-Path $resources 'licenses/mihomo'
-    New-Item -ItemType Directory -Path $coreNotices -Force | Out-Null
-    Copy-Item -LiteralPath $coreLicense -Destination (Join-Path $coreNotices 'LICENSE')
-    [IO.File]::WriteAllText((Join-Path $coreNotices 'NOTICE'), "Mihomo $($dependencies.mihomo.version), unmodified separate executable.`nSource: $($dependencies.mihomo.source)`nLicense: GPL-3.0; corresponding source accompanies the installer.`n")
     # Runtime packs and WebView2 are absent from the frontend license collector.
     $resolvedAssets = Get-Content -LiteralPath 'desktop/windows/obj/project.assets.json' -Raw | ConvertFrom-Json
     $nuget = @($resolvedAssets.packageFolders.PSObject.Properties.Name)[0]
@@ -188,7 +205,7 @@ try {
     Copy-Item -LiteralPath 'packaging/windows/dependencies.json' -Destination (Join-Path $resources 'dependencies.json')
     Copy-Item -LiteralPath 'packaging/windows/README.txt' -Destination (Join-Path $app 'README.txt')
     Copy-Item -LiteralPath 'LICENSE' -Destination (Join-Path $app 'LICENSE.txt')
-    [IO.File]::WriteAllText((Join-Path $app 'Cage.install-id'), 'io.github.lee-xeo.claude-cage')
+    [IO.File]::WriteAllText((Join-Path $app 'Cage.install-id'), 'local.sunday.gemini-cage')
     [IO.File]::WriteAllText((Join-Path $app 'version.txt'), $version)
     if ($signed) {
         $signTool = Get-SigningTool
@@ -213,7 +230,7 @@ try {
     $previousOutput = $null
     if (Test-Path -LiteralPath $OutputDirectory) {
         $marker = Join-Path $OutputDirectory 'Cage.install-id'
-        if (-not (Test-Path -LiteralPath $marker) -or (Get-Content -LiteralPath $marker -Raw) -ne 'io.github.lee-xeo.claude-cage') {
+        if (-not (Test-Path -LiteralPath $marker) -or (Get-Content -LiteralPath $marker -Raw) -ne 'local.sunday.gemini-cage') {
             throw 'Output directory exists and is not a Cage build.'
         }
         $previousOutput = $OutputDirectory + '.previous-' + [guid]::NewGuid().ToString('N')

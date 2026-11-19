@@ -37,7 +37,7 @@ type WindowsHostManagerBinding struct {
 	DiskFileID uint64    `json:"disk_file_id"`
 }
 
-func WindowsHostManagerServiceName(id uuid.UUID) string { return "CageHV-" + id.String() }
+func WindowsHostManagerServiceName(id uuid.UUID) string { return "GeminiCageHV-" + id.String() }
 
 func managerKnownFolder(id *windows.KNOWNFOLDERID) string {
 	p, err := windows.KnownFolderPath(id, 0)
@@ -48,11 +48,11 @@ func managerKnownFolder(id *windows.KNOWNFOLDERID) string {
 }
 
 func WindowsHostManagerBindingPath(id uuid.UUID) string {
-	return filepath.Join(managerKnownFolder(windows.FOLDERID_ProgramData), "Cage", "HyperVManager", id.String(), "binding.json")
+	return filepath.Join(managerKnownFolder(windows.FOLDERID_ProgramData), "GeminiCage", "HyperVManager", id.String(), "binding.json")
 }
 
 func WindowsHostManagerExecutablePath(id uuid.UUID) string {
-	return filepath.Join(managerKnownFolder(windows.FOLDERID_ProgramFiles), "Cage Host Manager", id.String(), "Cage.HyperVManager.exe")
+	return filepath.Join(managerKnownFolder(windows.FOLDERID_ProgramFiles), "GeminiCage Host Manager", id.String(), "Cage.HyperVManager.exe")
 }
 
 func managerProtected(path, hostSID string) error {
@@ -427,7 +427,7 @@ func serveWindowsHostManager(parent context.Context, path string, ready chan<- s
 		return err
 	}
 	server := windowsHostManagerServer{binding: binding}
-	listener, err := winio.ListenPipe(`\\.\pipe\Cage.HyperV.`+binding.VMID.String(), &winio.PipeConfig{SecurityDescriptor: "O:SYG:SYD:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;0x12019b;;;" + binding.HostSID + ")", InputBufferSize: windowsHostManagerWireLimit, OutputBufferSize: windowsHostManagerWireLimit})
+	listener, err := winio.ListenPipe(`\\.\pipe\GeminiCage.HyperV.`+binding.VMID.String(), &winio.PipeConfig{SecurityDescriptor: "O:SYG:SYD:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;0x12019b;;;" + binding.HostSID + ")", InputBufferSize: windowsHostManagerWireLimit, OutputBufferSize: windowsHostManagerWireLimit})
 	if err != nil {
 		return errors.New("service_pipe_unavailable")
 	}

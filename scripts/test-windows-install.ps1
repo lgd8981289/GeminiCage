@@ -5,7 +5,7 @@ param([Parameter(Mandatory)][string]$Installer, [switch]$RequireSignedQemu)
 . (Join-Path $PSScriptRoot 'windows-common.ps1')
 if (-not $IsWindows) { throw 'Installation smoke tests must run on Windows.' }
 $target = Join-Path $env:LOCALAPPDATA ('Programs/Cage-test-' + [guid]::NewGuid().ToString('N'))
-$savedKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\ClaudeCage'
+$savedKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\GeminiCage'
 if (Test-Path $savedKey) { throw 'Use a disposable Windows user without an existing Cage installation.' }
 $fixture = Join-Path $PSScriptRoot 'personal-data-fixture.mjs'
 $manifest = Join-Path ([IO.Path]::GetTempPath()) ('cage-personal-data-' + [guid]::NewGuid().ToString('N') + '.json')
@@ -36,12 +36,12 @@ function Run-Installer {
         throw "Installer returned $($process.ExitCode), expected $ExpectedExitCode"
     }
 }
-$desktopShortcut = Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) 'Cage.lnk'
-$startMenuDirectory = Join-Path ([Environment]::GetFolderPath('Programs')) 'Cage'
+$desktopShortcut = Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) 'Gemini Cage.lnk'
+$startMenuDirectory = Join-Path ([Environment]::GetFolderPath('Programs')) 'Gemini Cage'
 function Assert-Shortcuts {
     param([bool]$Desktop, [bool]$StartMenu)
     if ((Test-Path -LiteralPath $desktopShortcut) -ne $Desktop) { throw 'Desktop shortcut differs from the installer selection.' }
-    foreach ($name in @('Cage.lnk', 'Uninstall Cage.lnk')) {
+    foreach ($name in @('Gemini Cage.lnk', '卸载 Gemini Cage.lnk')) {
         if ((Test-Path -LiteralPath (Join-Path $startMenuDirectory $name)) -ne $StartMenu) { throw "Start menu shortcut differs from the installer selection: $name" }
     }
     if ($Desktop) {

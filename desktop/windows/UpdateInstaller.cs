@@ -129,7 +129,7 @@ internal static class UpdateInstaller
                 {
                     // NSIS and this helper both require a newly created named
                     // object and retain its handle for the entire transaction.
-                    using var installationLock = new Mutex(false, "Global\\Cage.Installation", out var ownsInstallation);
+                    using var installationLock = new Mutex(false, "Global\\GeminiCage.Installation", out var ownsInstallation);
                     if (!ownsInstallation) throw new IOException("另一个安装或卸载正在进行，已保留更新备份，请等待完成后恢复。");
                     EnsureInstallationComplete(plan.Target);
                     if (UpdateRecovery.OriginalIntact(plan.Target, backup))

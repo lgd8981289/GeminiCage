@@ -158,7 +158,7 @@ internal static class Pairing
 
     internal static byte[] Crypt(byte[] data, Guid vm, string sid, bool protect)
     {
-        var entropyBytes = SHA256.HashData(Protocol.Utf8.GetBytes("Cage.HyperV.v1:" + vm.ToString("D") + ":" + sid));
+        var entropyBytes = SHA256.HashData(Protocol.Utf8.GetBytes("GeminiCage.HyperV.v1:" + vm.ToString("D") + ":" + sid));
         var input = new Blob { Size = data.Length, Data = Marshal.AllocHGlobal(data.Length) };
         var entropy = new Blob { Size = entropyBytes.Length, Data = Marshal.AllocHGlobal(entropyBytes.Length) };
         Blob output = default;
