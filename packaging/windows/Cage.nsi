@@ -323,7 +323,11 @@ FunctionEnd
 Function CheckDestination
   InitPluginsDir
   SetOutPath "$PLUGINSDIR"
+!ifdef NSIS_WIN32_MAKENSIS
+  File /oname=check-install.exe "${APP_DIR}\resources\cage.exe"
+!else
   File /oname=check-install.exe "${APP_DIR}/resources/cage.exe"
+!endif
   nsExec::ExecToStack '"$PLUGINSDIR\check-install.exe" verify-install-directory "$INSTDIR"'
   Pop $0
   Pop $1
