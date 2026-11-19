@@ -9,7 +9,7 @@ import (
 func TestPlatformReleaseNeverInstallsAnotherPlatform(t *testing.T) {
 	r := fixtureRelease("0.2.0", false)
 	windowsAsset := r.Assets[0]
-	windowsAsset.Name = "Cage-0.2.0-windows-amd64-setup.exe"
+	windowsAsset.Name = "GeminiCage-0.2.0-windows-amd64-setup.exe"
 	windowsAsset.URL = "https://github.com/" + repository + "/releases/download/v0.2.0/" + windowsAsset.Name
 	androidAsset := r.Assets[0]
 	androidAsset.Name = "Cage-0.2.0-android-arm64.apk"

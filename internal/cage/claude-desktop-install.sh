@@ -2,12 +2,12 @@
 set -euo pipefail
 mkdir -p "$HOME/.config/claude-cage"
 exec 9>"$HOME/.config/claude-cage/desktop-install.lock"
-flock -n 9 || { echo 'Antigravity installation is already running.' >&2; exit 1; }
+flock -n 9 || { echo 'Antigravity 正在安装，请等待安装完成。' >&2; exit 1; }
 if systemctl is-active --quiet cage-claude-desktop.service; then
   echo '请先保存工作并关闭 Antigravity，再更新或修复安装。' >&2
   exit 1
 fi
-case "$(dpkg --print-architecture)" in arm64|amd64) ;; *) echo 'Unsupported desktop architecture.' >&2; exit 1;; esac
+case "$(dpkg --print-architecture)" in arm64|amd64) ;; *) echo '当前处理器架构不支持安装 Antigravity 桌面版。' >&2; exit 1;; esac
 printf '正在准备安装依赖…\n'
 audio_pkg=libasound2; gtk_pkg=libgtk-3-0
 if apt-cache show libasound2t64 2>/dev/null | grep '^Package:' >/dev/null; then audio_pkg=libasound2t64; gtk_pkg=libgtk-3-0t64; fi

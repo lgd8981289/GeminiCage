@@ -41,7 +41,7 @@ func archiveName(version, goos, goarch string) (string, error) {
 	case goos == "darwin" && goarch == "arm64":
 		return "Cage-" + version + "-macos-arm64.dmg", nil
 	case goos == "windows" && goarch == "amd64":
-		return "Cage-" + version + "-windows-amd64-setup.exe", nil
+		return "GeminiCage-" + version + "-windows-amd64-setup.exe", nil
 	// Linux only learns that a newer package exists; the system installs it.
 	case goos == "linux" && goarch == "amd64":
 		return "Cage-" + version + "-linux-amd64.deb", nil

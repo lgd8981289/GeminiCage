@@ -1,0 +1,59 @@
+name: 上传已验证的 Windows 测试版
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 要上传的 Windows 测试版标签，如 v2.0.5-beta.1
+        required: true
+      run_id:
+        description: 该标签对应的成功 Windows 构建运行编号
+        required: true
+permissions:
+  actions: read
+  contents: write
+jobs:
+  upload:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      VERSION_TAG: ${{ inputs.tag }}
+      TEST_RUN: ${{ inputs.run_id }}
+    steps:
+      - name: 核对构建记录、测试版标签和发行草稿
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$VERSION_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$ && "$TEST_RUN" =~ ^[0-9]+$ ]]
+          commit=$(gh api "repos/$GH_REPO/commits/$VERSION_TAG" --jq .sha)
+          gh api "repos/$GH_REPO/actions/runs/$TEST_RUN" | jq -e --arg sha "$commit" --arg repo "$GH_REPO" '
+            .path == ".github/workflows/windows-beta.yml" and .conclusion == "success" and
+            .head_sha == $sha and .head_branch == "windows-beta" and .head_repository.full_name == $repo'
+          gh release view "$VERSION_TAG" --json isDraft,isPrerelease | jq -e '.isDraft and .isPrerelease'
+      - name: 校验并上传测试通过的四个发行文件
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh run download "$TEST_RUN" -n GeminiCage-Windows-x64 --dir "$RUNNER_TEMP/windows"
+          cd "$RUNNER_TEMP/windows"
+          mapfile -d '' manifests < <(find . -type f -name SHA256SUMS -print0)
+          [[ ${#manifests[@]} == 1 ]]
+          cd "$(dirname "${manifests[0]}")"
+          python3 - <<'PY'
+          import hashlib, os, pathlib, re
+          version = os.environ['VERSION_TAG'][1:]
+          files = {f'GeminiCage-{version}-windows-amd64-setup-unsigned.exe', 'qemu-11.1.0-windows-full-source.tar.gz', 'mihomo-v1.19.33-source.tar.gz'}
+          lines = pathlib.Path('SHA256SUMS').read_text(encoding='utf-8-sig').splitlines()
+          if len(lines) != len(files):
+              raise ValueError('校验文件数量有误')
+          for line in lines:
+              match = re.fullmatch(r'([0-9a-f]{64})  (.+)', line)
+              if not match or match[2] not in files:
+                  raise ValueError('校验文件内容有误')
+              files.remove(match[2])
+              with open(match[2], 'rb') as stream:
+                  if hashlib.file_digest(stream, 'sha256').hexdigest() != match[1]:
+                      raise ValueError(match[2])
+          PY
+          gh release upload "$VERSION_TAG" "GeminiCage-${VERSION_TAG#v}-windows-amd64-setup-unsigned.exe" qemu-11.1.0-windows-full-source.tar.gz mihomo-v1.19.33-source.tar.gz SHA256SUMS

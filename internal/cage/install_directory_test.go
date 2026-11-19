@@ -3,6 +3,7 @@ package cage
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -19,7 +20,16 @@ func TestInstallDirectorySeparatesProfilesAndExistingApps(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	for _, target := range []string{home, filepath.Join(home, ".claude-cage", "child"), filepath.Join(DefaultProfileDir(home), "install"), filepath.Join(root, "old"), filepath.Join(root, "old", "sub"), filepath.Join(root, "ours", "sub")} {
+	profile := DefaultProfileDir(home)
+	if err := os.MkdirAll(profile, 0700); err != nil {
+		t.Fatal(err)
+	}
+	data := filepath.Join(root, "ours", "CageData")
+	backup := filepath.Join(root, "backup")
+	if err := writeStorageJSON(filepath.Join(profile, locationFile), storageRecord{Directory: data, ID: strings.Repeat("a", 32), Backups: []string{backup}}); err != nil {
+		t.Fatal(err)
+	}
+	for _, target := range []string{data, backup, filepath.Join(backup, "child"), home, filepath.Join(home, ".claude-cage", "child"), filepath.Join(DefaultProfileDir(home), "install"), filepath.Join(root, "old"), filepath.Join(root, "old", "sub"), filepath.Join(root, "ours", "sub")} {
 		if err := CheckInstallDirectory(target, home); err == nil {
 			t.Errorf("accepted protected directory %q", target)
 		}

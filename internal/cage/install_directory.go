@@ -20,7 +20,21 @@ func CheckInstallDirectory(target, home string) error {
 	if err != nil {
 		return err
 	}
-	for _, p := range append(private, original, DefaultProfileDir(home), other) {
+	own := DefaultProfileDir(home)
+	ownStorage, err := StoragePrivatePaths(own)
+	if err != nil {
+		return err
+	}
+	// The default Windows data directory of a packaged installation is
+	// <install>/CageData. Its installer preserves that directory on upgrade.
+	marker, _ := os.ReadFile(filepath.Join(actual, "Cage.install-id"))
+	for _, directory := range ownStorage {
+		if string(marker) == "local.sunday.gemini-cage" && sameStoragePath(directory, filepath.Join(actual, "CageData")) {
+			continue
+		}
+		private = append(private, directory)
+	}
+	for _, p := range append(private, original, own, other) {
 		if p == "" {
 			continue
 		}
