@@ -71,8 +71,16 @@ $dependencies = Get-Content -LiteralPath (Join-Path $repository 'packaging/windo
 $pinnedSources = $QemuSourceArchive -and -not $signed
 if ($pinnedSources) {
     if ((Get-FileHash -LiteralPath $QemuSourceArchive).Hash -ne '1d519eb607fc4d519b860a65150e7d78941eba19302aa3061574bec316850896') { throw '上游 QEMU 完整源码校验失败。' }
-    $identity = Get-Content (Join-Path $qemuRuntime 'cage-build.json') -Raw | ConvertFrom-Json
-    if ($identity.unsignedManifestSha256 -ne (Get-WindowsQemuSourceManifestHash $QemuSourceArchive)) { throw 'QEMU 运行时和对应源码不匹配。' }
+    $manifestPath = Join-Path $qemuRuntime 'cage-build.json'
+    $identity = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -AsHashtable
+    # The original 0.1.8 media carries the build manifest itself. A signed
+    # rebuild instead records its pre-signing manifest digest separately.
+    $sourceIdentity = if ($identity.ContainsKey('unsignedManifestSha256')) { $identity.unsignedManifestSha256 } else { (Get-FileHash -LiteralPath $manifestPath).Hash }
+    if ($sourceIdentity -ne (Get-WindowsQemuSourceManifestHash $QemuSourceArchive)) { throw 'QEMU 运行时和对应源码不匹配。' }
+    foreach ($binary in (Get-WindowsQemuBinaries $qemuRuntime)) {
+        $entry = @($identity.files | Where-Object { $_.name -eq $binary.Name })
+        if ($entry.Count -ne 1 -or $entry[0].sha256 -ne (Get-FileHash -LiteralPath $binary.FullName).Hash) { throw "QEMU 文件与构建清单不匹配：$($binary.Name)" }
+    }
 } else {
     $qemuTar = Get-VerifiedGitArchive $dependencies.qemuSource $DependencyCache
 }
