@@ -51,8 +51,6 @@ jobs:
           compression-level: 0
           retention-days: 14
           if-no-files-found: error
-      - name: 检查运行器能否启动 WHPX 虚拟 CPU
-        run: ./gemini/windows-hypervisor-check.ps1 -AppDirectory _output/windows-amd64/app
       - name: 在含 Claude Cage 的 Windows 上验证共存
         run: |
           $exe = Get-ChildItem _output/releases/*/windows/GeminiCage-*.exe

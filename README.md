@@ -4,7 +4,7 @@
 
 **[下载 GeminiCage 2.0.4 · Mac 版（Apple 芯片）](https://github.com/lgd8981289/GeminiCage/releases/download/v2.0.4/GeminiCage-2.0.4-macos-arm64.dmg)**　·　[发行说明与 SHA-256 校验文件](https://github.com/lgd8981289/GeminiCage/releases/tag/v2.0.4)
 
-**[Windows x64 测试版下载与校验](https://github.com/lgd8981289/GeminiCage/releases/tag/v2.0.5-beta.1)**　·　[Windows 中文安装指南](docs/windows.md)
+**[下载 Windows x64 测试版 · EXE](https://github.com/lgd8981289/GeminiCage/releases/download/v2.0.5-beta.1/GeminiCage-2.0.5-beta.1-windows-amd64-setup-unsigned.exe)**　·　[Windows 中文安装指南](docs/windows.md)　·　[发行说明及校验文件](https://github.com/lgd8981289/GeminiCage/releases/tag/v2.0.5-beta.1)
 
 以下流程以 Mac 稳定版为例。
 
@@ -85,7 +85,7 @@ Gemini Cage 的本机配置位于 `~/Library/GeminiCage`，使用独立的账户
 可在 Antigravity 终端输入 `/remote-control`，在手机浏览器用同一 Google 账号打开终端显示的会话链接。需要关闭时输入 `/remote-control off`。[Google 远程会话说明](https://antigravity.google/docs/remote-control/)
 
 **哪些功能经过验证？**  
-已在独立的 Debian 13 客机中验证安装、网络检查、Antigravity 欢迎页到 Google 授权页，以及 CLI 在所选项目中启动。macOS 客机的 Google 安装介质已校验签名和版本，完整首次安装流程尚待实机验证。实体手机配对、外部 SSH 和 Tailscale 跨设备连接尚待端到端验证。Windows 工作台通过客机浏览器打开 Gemini；Google 多账号额度自动调度尚未实现。
+已在独立的 Debian 13 客机中验证安装、网络检查、Antigravity 欢迎页到 Google 授权页，以及 CLI 在所选项目中启动。macOS 客机的 Google 安装介质已校验签名和版本，完整首次安装流程尚待实机验证。实体手机配对、外部 SSH 和 Tailscale 跨设备连接尚待端到端验证。选择 Windows 作为客机时，可以通过客机浏览器打开 Gemini。在 Windows 主机上选择 Debian 13 客机，可使用 Linux 版 Antigravity。Google 多账号额度自动调度尚待实现。
 
 ## 命令行与自动化
 
@@ -128,4 +128,4 @@ open "_output/Gemini Cage.app"
 
 ## 上游与许可
 
-GeminiCage 基于 Lee-xeo 的 **Claude Cage 0.1.8**，后者基于 Sylvain Zimmer 的 **agent-vm**。项目延续 MIT 许可，保留原作者版权及第三方许可声明。Mihomo、noVNC、SSHFS 等组件遵循各自许可；发行页附有 Mihomo 和 macOS 客机组件的对应源码。[上游源码快照](https://github.com/Lee-xeo/Claude-Cage/tree/ee25ae650e2b3d89b8e157cbe58aadb610479d0d) · [LICENSE](LICENSE) · [NOTICE](NOTICE) · [第三方许可](THIRD_PARTY_LICENSES)
+GeminiCage 基于 Lee-xeo 的 **Claude Cage 0.1.8**，后者基于 Sylvain Zimmer 的 **agent-vm**。项目延续 MIT 许可，保留原作者版权及第三方许可声明。Mihomo、noVNC、SSHFS 等组件遵循各自许可；Mac 发行页附有 Mihomo 和 macOS 客机组件的对应源码，Windows 发行页附有 Mihomo 和 QEMU 的对应源码。[上游源码快照](https://github.com/Lee-xeo/Claude-Cage/tree/ee25ae650e2b3d89b8e157cbe58aadb610479d0d) · [LICENSE](LICENSE) · [NOTICE](NOTICE) · [第三方许可](THIRD_PARTY_LICENSES)

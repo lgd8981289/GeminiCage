@@ -32,6 +32,12 @@ Windows x64 测试版面向搭载 Intel 或 AMD 处理器的电脑。建议先�
 
 要更新时，先保存工作并退出 Gemini Cage，再运行新版安装包。要卸载时，在 Windows 的「设置 → 应用 → 已安装的应用」中选择 **Gemini Cage**。卸载会保留项目、个人配置和虚拟磁盘。
 
+## 本版实测范围
+
+在 Windows Server 2025 x64 上，先安装官方 Claude Cage，再安装 Gemini Cage，验证了工作台窗口与后台通信、覆盖升级、快捷方式选择和卸载。原工作台随后可以再次打开，原有的 12 个个人数据样本逐项通过 SHA-256 校验。
+
+Windows 托管主机使用 WHPX 硬件加速启动了 Debian 13 x86_64。Windows 11 实机上的代理配置和个人 Google 账号登录仍待验证。[本版测试日志](https://github.com/lgd8981289/GeminiCage/actions/runs/44508396101)
+
 ## 从源码构建 Windows 安装包
 
 使用 Windows x64、PowerShell 7、与 `global.json` 匹配的 .NET SDK、与 `go.mod` 匹配的 Go、Node.js 24、uv、7-Zip 和 NSIS。在干净的仓库根目录执行以下命令。构建脚本会校验指定版本的上游介质，复用 QEMU、OpenSSH、WebView2 等运行时，并从本仓库编译工作台、桌面启动器和客机助手。
