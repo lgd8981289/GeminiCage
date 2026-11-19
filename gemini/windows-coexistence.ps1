@@ -29,12 +29,16 @@ if ($LASTEXITCODE -or $info.config_path -ne (Join-Path $newProfile 'config.json'
 $defaultReport = Join-Path $env:RUNNER_TEMP 'gemini-default-window.json'
 Start-Checked "$native/Cage.exe" @('--smoke-test', "`"$defaultReport`"")
 if (-not (Test-Path "$newProfile/webview2") -or (Test-Path "$env:USERPROFILE/.claude-cage")) { throw '桌面工作台未隔离默认配置' }
+$stateMarker = Join-Path $newProfile 'gemini-preservation-test.txt'
+[IO.File]::WriteAllText($stateMarker, [guid]::NewGuid().ToString('D'))
+$stateHash = (Get-FileHash $stateMarker).Hash
 Start-Checked $Installer @('/S', "/D=$original") 2
 Start-Checked $Installer @('/S', "/D=$original\empty-child") 2
 $alias = Join-Path $env:RUNNER_TEMP 'original-junction'
 New-Item -ItemType Junction -Path $alias -Target $original | Out-Null
 Start-Checked $Installer @('/S', "/D=$alias\new-folder") 2
 & (Join-Path $PSScriptRoot '../scripts/test-windows-install.ps1') -Installer $Installer
+if ((Get-FileHash $stateMarker).Hash -ne $stateHash) { throw 'Gemini Cage 卸载后个人配置未保留' }
 if ((Original-State) -cne $before) { throw '原应用、注册表或快捷方式发生变化' }
 # Open the upstream workbench after our installer is gone. Keep its own smoke
 # profile outside the byte-for-byte preservation fixture.

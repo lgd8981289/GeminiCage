@@ -118,7 +118,7 @@ if ($HostOnly) {
     exit 0
 }
 $maintenanceExitCode=46
-$work=Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) ('Cage\ComponentMaintenance\'+$vm.Id.ToString('D'))
+$work=Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) ('GeminiCage\ComponentMaintenance\'+$vm.Id.ToString('D'))
 for ($parent=$work; $parent; $parent=[IO.Path]::GetDirectoryName($parent)) {
     if ((Test-Path -LiteralPath $parent) -and (Get-Item -LiteralPath $parent -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw '组件维护目录包含文件链接。' }
 }

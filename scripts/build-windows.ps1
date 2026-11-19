@@ -131,11 +131,11 @@ try {
         '-p:EnableWindowsTargeting=true', '-p:PublishSingleFile=true', '-p:RestoreLockedMode=true', "-p:Version=$version", "-p:InformationalVersion=$version", '-o', $app)
     Get-ChildItem -LiteralPath $app -File | Where-Object { $_.Extension -in @('.pdb', '.xml') } | Remove-Item -Force
     Invoke-BuildTool $node @('scripts/bundle-cloud-kit.mjs', $resources)
+    $qemuTarget = [IO.Path]::GetFullPath((Join-Path $resources 'runtime/qemu'))
     if ($UpstreamInstaller) {
         Copy-Item (Join-Path $kitResources 'runtime/*') (Join-Path $resources 'runtime') -Recurse
         Copy-Item (Join-Path $kitResources 'mihomo.exe') $resources
         Copy-Item (Join-Path $kitResources 'licenses') $resources -Recurse
-        Assert-WindowsQemuRuntime (Join-Path $resources 'runtime/qemu') -Firmware
     } else {
         $coreArchive = Get-VerifiedDependency $dependencies.mihomo $DependencyCache
         $core = Join-Path $stage 'mihomo'
@@ -153,7 +153,6 @@ try {
             Remove-Item -LiteralPath (Join-Path $sshTarget $serverFile) -Force -ErrorAction SilentlyContinue
         }
         $qemuArchive = Get-VerifiedDependency $dependencies.qemu $DependencyCache
-        $qemuTarget = [IO.Path]::GetFullPath((Join-Path $resources 'runtime/qemu'))
         Expand-BuildArchive $qemuArchive $qemuTarget $sevenZip
         $runtimeManifest = Get-Content (Join-Path $qemuBuilt 'cage-build.json') -Raw | ConvertFrom-Json
         $ownedRuntime = @($runtimeManifest.files | ForEach-Object { $_.name }) + @('cage-build.json')
